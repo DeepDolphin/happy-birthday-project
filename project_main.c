@@ -74,6 +74,7 @@ int main(){
 void display_status(){
 	volatile int * ledr_base = (int*) LEDR_BASE;
 	volatile int * hex3_hex0_base = (int*) HEX3_HEX0_BASE;
+	volatile int * hex5_hex4_base = (int*) HEX5_HEX4_BASE;
 	
 	//store all ledr displays
 	int to_display_on_ledr = 0;
@@ -86,13 +87,19 @@ void display_status(){
 	
 	//store all hex displays
 	int to_display_on_hex3_hex0 = 0;
+	int to_display_on_hex5_hex4 = 0;
 	
 	//display the current volume on the hexes
 	to_display_on_hex3_hex0 = num_to_seg7_dec(volume);
 	
+	//display the current length on the hexes as well
+	to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_hex(audio_stream.length_R) << 16);
+	to_display_on_hex5_hex4 = num_to_seg7_hex(audio_stream.length_L);
+	
 	//display on hex and ledr
 	*ledr_base = to_display_on_ledr;
 	*hex3_hex0_base = to_display_on_hex3_hex0;
+	*hex5_hex4_base = to_display_on_hex5_hex4;
 }
 
 void populate_stream(){
@@ -136,6 +143,7 @@ void clear_stream(){
 		advance_stream(&audio_stream.list_front_R);
 	
 	audio_stream.list_back_R = NULL;
+	audio_stream.current_location_R = 0;
 	audio_stream.length_R = 0;
 	
 	//clear the left side
@@ -143,6 +151,7 @@ void clear_stream(){
 		advance_stream(&audio_stream.list_front_L);
 	
 	audio_stream.list_back_L = NULL;
+	audio_stream.current_location_L = 0;
 	audio_stream.length_L = 0;
 	
 	//reset song location so processing can begin again
