@@ -24,10 +24,12 @@ struct AudioStream audio_stream = {.current_song_location = 0,
 									.length_L = 0};
 struct MusicSong current_song;
 struct StatusFlags status_flags = {.clear_queue = false, .change_song = false, .is_playing = false};
-float volume = 10;
-const float max_volume = 20, min_volume = 1;
+unsigned int volume = 10;
+const unsigned int max_volume = 20, min_volume = 1;
 
 int main(){
+	volatile int * sw_base = (int*) SW_BASE;
+	
 	//configure the interrupts and hardware components
 	set_A9_IRQ_stack();
 	config_GIC();
@@ -42,22 +44,55 @@ int main(){
 	
 	//main loop
 	while(1){
-		//display if the stream has been fully populated
-		if (audio_stream.current_song_location == current_song.length) 
-			*((int*) LEDR_BASE) = 0b1;
-		else 
-			*((int*) LEDR_BASE) = 0b0;
-		
 		//continue to populate the stream
 		populate_stream();
 		
 		//clear the stream if requested
 		if(status_flags.clear_queue || status_flags.change_song){
 			clear_stream();
+			
+			//reset the flag so that clearing does not happen again
+			status_flags.clear_queue = false;
 		}
+		
+		//change current song if requested
+		if(status_flags.change_song){
+			int switches = *sw_base;
+		
+		
+			//reset the flag so that changing the song does not happen again
+			status_flags.change_song = false;
+		}
+		
+		//display status on leds and hexes
+		display_status();
 	}
 	
 	return 0;
+}
+
+void display_status(){
+	volatile int * ledr_base = (int*) LEDR_BASE;
+	volatile int * hex3_hex0_base = (int*) HEX3_HEX0_BASE;
+	
+	//store all ledr displays
+	int to_display_on_ledr = 0;
+	
+	//display if the stream has been fully populated
+	if (audio_stream.current_song_location == current_song.length) 
+		to_display_on_ledr = 0b1;
+	else 
+		to_display_on_ledr = 0b0;
+	
+	//store all hex displays
+	int to_display_on_hex3_hex0 = 0;
+	
+	//display the current volume on the hexes
+	to_display_on_hex3_hex0 = num_to_seg7_dec(volume);
+	
+	//display on hex and ledr
+	*ledr_base = to_display_on_ledr;
+	*hex3_hex0_base = to_display_on_hex3_hex0;
 }
 
 void populate_stream(){
@@ -209,27 +244,29 @@ void keys_ISR(){
 	
 	//change song to selected on switches and clear current queue if key press 1
 	if(edgecapture & 0b0010){
-		status_flags.clear_queue = true;
+		status_flags.change_song = true;
+		
+		//stop playing if there is a song currently playing
+		if(status_flags.is_playing){
+			stop_all_audio_playback();
+		}
 	}
 	
 	//increase volume if key press 2
 	if(edgecapture & 0b0100){
 		if(volume < max_volume) volume++;
-		
-		//display the new volume on the seven segs
-		*((int*) HEX3_HEX0_BASE) = num_to_seg7((char) volume);
 	}
 	
 	//decrease volume if key press 3
 	if(edgecapture & 0b1000){
 		if(volume > min_volume) volume--;
-		
-		//display the new volume on the seven segs
-		*((int*) HEX3_HEX0_BASE) = num_to_seg7((char) volume);
 	}
 }
 
 void audio_ISR(){
+	//catch if there is nothing to write to the audio queue
+	if(audio_stream.list_front_R == NULL || audio_stream.list_front_L == NULL) while (1);
+	
 	volatile int * audio_base = (int *) AUDIO_BASE;
 	
 	unsigned int fifo_space = *(audio_base + 1);
@@ -239,6 +276,7 @@ void audio_ISR(){
 	while(write_wave(&num_samples_right, audio_base + 3, audio_stream.list_front_R->wave, &audio_stream.current_location_R)){
 		if(audio_stream.list_front_R == audio_stream.list_back_R){
 			stop_audio_playback(&num_samples_right, audio_base + 3);
+			status_flags.clear_queue = true;
 		}
 		
 		advance_stream(&audio_stream.list_front_R);
@@ -251,6 +289,7 @@ void audio_ISR(){
 	while(write_wave(&num_samples_left, audio_base + 2, audio_stream.list_front_L->wave, &audio_stream.current_location_L)){
 		if(audio_stream.list_front_L == audio_stream.list_back_L){
 			stop_audio_playback(&num_samples_left, audio_base + 2);
+			status_flags.clear_queue = true;
 		}
 		
 		advance_stream(&audio_stream.list_front_L);

@@ -47,5 +47,6 @@ void clear_stream();
 void stop_audio_playback(unsigned int * num_samples, volatile int * audio_fifo);
 void stop_all_audio_playback();
 void start_audio_playback();
+void display_status();
 
 #endif
