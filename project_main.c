@@ -110,7 +110,7 @@ void populate_stream(){
 	struct MusicWaveNode * node_R = malloc(sizeof(struct MusicWaveNode));
 	struct MusicWaveNode * node_L = malloc(sizeof(struct MusicWaveNode));
 	
-	node_R->wave = get_wave(current_song.music_notes[audio_stream.current_song_location]);
+	node_R->wave = get_chord_wave(current_song.music_chords[audio_stream.current_song_location]);
 	node_L->wave = copy_wave(node_R->wave);
 	
 	node_R->next = NULL;

@@ -59,23 +59,49 @@ int get_num(char * note, int octave){
 	return number + (octave * 12);
 }
 
-//returns a dynamically allocated array representing the wave intensity of each sample
-struct MusicWave get_wave(struct MusicNote music_note){
+//returns a dynamically allocated array representing the wave intensity of each sample for the chord
+struct MusicWave get_chord_wave(struct MusicChord music_chord){
 	//find the number of samples for the duration given
-	unsigned int number_of_samples = (unsigned int) floor(music_note.duration * sampling_frequency);
+	unsigned int number_of_samples = (unsigned int) floor(music_chord.duration * sampling_frequency);
 	
+	//the full wave of all notes summed together
+	double * wave_array = malloc(number_of_samples * sizeof(double));
+	
+	//initialize the wave array to zero
+	for(unsigned int i = 0; i < number_of_samples; i++){
+		wave_array[i] = 0;
+	}
+	
+	//generate the music wave for each individual note and sum together
+	struct MusicWave note_wave;
+	for(unsigned int i = 0; i < music_chord.num_notes; i++){
+		note_wave = get_note_wave(music_chord.music_notes[i], number_of_samples);
+		
+		for(unsigned int j = 0; j < number_of_samples; j++){
+			wave_array[j] += note_wave.waveform[j];
+		}
+	}
+	
+	//increase the volume of the wave
+	for(unsigned int i = 0; i < number_of_samples; i++){
+		wave_array[i] *= music_chord.intensity * default_amplitude;
+	}
+
+	struct MusicWave wave = {.waveform = wave_array, .length = number_of_samples};
+	return wave;
+}
+
+//returns a dynamically allocated array representing the wave intensity of each sample for the note
+struct MusicWave get_note_wave(struct MusicNote music_note, unsigned int number_of_samples){
 	//preallocate enough space for all samples
 	double * wave_array = malloc(number_of_samples * sizeof(double));
 	
-	//find the frequency and intensity for the given note and octave
+	//find the frequency for the given note and octave
 	double frequency;
-	double intensity;
 	if(!strcmp(music_note.note, "S")){ //if the note is silent, return no frequency and zero the intensity
 		frequency = 0;
-		intensity = 0;
 	} else {
 		frequency = get_frequency(music_note.note, music_note.octave);
-		intensity = music_note.intensity;
 	}
 	
 	//set the current time to zero at the beginning of the wave
@@ -83,7 +109,7 @@ struct MusicWave get_wave(struct MusicNote music_note){
 	
 	//loop through the entire array, taking samples of the wave at each time given
 	for(unsigned int index = 0; index < number_of_samples; index++){		
-		wave_array[index] = intensity * default_amplitude * sin(2 * pi * frequency * current_time);
+		wave_array[index] = sin(2 * pi * frequency * current_time);
 		
 		current_time += sampling_period;
 	}
