@@ -14,7 +14,6 @@ struct StatusFlags{
 	bool is_playing;
 };
 
-bool write_wave(unsigned int * num_samples, volatile int * audio_fifo, struct MusicWave wave, unsigned int * current_location);
 void stop_audio_playback(unsigned int * num_samples, volatile int * audio_fifo);
 void stop_all_audio_playback();
 void start_audio_playback();

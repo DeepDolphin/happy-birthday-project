@@ -27,6 +27,8 @@ int main(){
 					
 	//set the current song to the test song
 	audio_stream.current_song = test_song;
+	audio_stream.current_location_L = 0;
+	audio_stream.current_location_R = 0;
 	
 	//enable interrupts once all setup is finished
 	enable_A9_interrupts();
@@ -71,8 +73,10 @@ void display_status(){
 	//display if the audio_stream has been fully populated
 	if (audio_stream.current_song_location == audio_stream.current_song.length) 
 		to_display_on_ledr = 0b1;
-	else 
-		to_display_on_ledr = 0b0;
+	
+	//display if the audio_stream is currently valid
+	if (is_stream_valid())
+		to_display_on_ledr = to_display_on_ledr | 0b10;
 	
 	//store all hex displays
 	int to_display_on_hex3_hex0 = 0;
@@ -123,37 +127,15 @@ void stop_audio_playback(unsigned int * num_samples, volatile int * audio_fifo){
 }
 
 void start_audio_playback(){
-	//check to see if the audio_stream is valid
-	if(audio_stream.list_front_L == NULL || audio_stream.list_front_R == NULL) return;
+	//check to see if the stream is valid
+	if(!is_stream_valid()) return;
 	
 	//turn on interrupts
 	volatile int * audio_base = (int*) AUDIO_BASE;
 	*audio_base = 0b0010;
 	
-	//reset location of the audio audio_stream
-	audio_stream.current_location_R = 0;
-	audio_stream.current_location_L = 0;
-	
 	//set the playing flag
 	status_flags.is_playing = true;
-}
-
-bool write_wave(unsigned int * num_samples, volatile int * audio_fifo, struct MusicWave wave, unsigned int * current_location){
-	while (*num_samples > 0){
-		//check to make sure your current location isn't at the end of the waveform
-		if(*current_location == wave.length) return true;	
-		
-		//write the current sample
-		*audio_fifo = (int) (volume * wave.waveform[*current_location]);
-		
-		//update the number of samples left
-		*num_samples = *num_samples - 1;
-		
-		//update current location
-		*current_location = *current_location + 1;
-	}
-	
-	return false;
 }
 
 void keys_ISR(){
@@ -198,32 +180,42 @@ void audio_ISR(){
 	if(audio_stream.list_front_R == NULL || audio_stream.list_front_L == NULL) while (1);
 	
 	volatile int * audio_base = (int *) AUDIO_BASE;
+	volatile int * audio_right = audio_base + 3;
+	volatile int * audio_left = audio_base + 2;
 	
 	unsigned int fifo_space = *(audio_base + 1);
 		
 	//check the right write availability
 	unsigned int num_samples_right = (unsigned int) ((fifo_space >> 16) & 0xFF);
-	while(write_wave(&num_samples_right, audio_base + 3, audio_stream.list_front_R->wave, &audio_stream.current_location_R)){
-		if(audio_stream.list_front_R == audio_stream.list_back_R){
-			stop_audio_playback(&num_samples_right, audio_base + 3);
-			status_flags.clear_queue = true;
-		}
+	while(num_samples_right > 0){
+		//retrieve and write a sample to the right
+		*audio_right = (int) (volume * get_sample_R());
 		
-		advance_stream(&audio_stream.list_front_R);
-		audio_stream.current_location_R = 0;
-		audio_stream.length_R--;
+		//decrement the number of samples required
+		num_samples_right--;
+		
+		//check if the audio stream is still valid
+		if(!is_stream_valid()){
+			stop_audio_playback(&num_samples_right, audio_right);
+			status_flags.clear_queue = true;
+			break;
+		}
 	}
 	
 	//check the left write availability
 	unsigned int num_samples_left = (unsigned int) ((fifo_space >> 24) & 0xFF);
-	while(write_wave(&num_samples_left, audio_base + 2, audio_stream.list_front_L->wave, &audio_stream.current_location_L)){
-		if(audio_stream.list_front_L == audio_stream.list_back_L){
-			stop_audio_playback(&num_samples_left, audio_base + 2);
-			status_flags.clear_queue = true;
-		}
+	while(num_samples_left > 0){
+		//retrieve and write a sample to the left
+		*audio_left = (int) (volume * get_sample_L());
 		
-		advance_stream(&audio_stream.list_front_L);
-		audio_stream.current_location_L = 0;
-		audio_stream.length_L--;
+		//decrement the number of samples required
+		num_samples_left--;
+		
+		//check if the audio stream is still valid
+		if(!is_stream_valid()){
+			stop_audio_playback(&num_samples_left, audio_left);
+			status_flags.clear_queue = true;
+			break;
+		}
 	}
 }

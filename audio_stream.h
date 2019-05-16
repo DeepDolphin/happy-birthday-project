@@ -1,6 +1,8 @@
 #ifndef d_audio_stream
 #define d_audio_stream
 
+#include <stdbool.h>
+
 #include "music.h"
 
 struct MusicWaveNode{
@@ -35,5 +37,8 @@ struct AudioStream {
 void advance_stream(struct MusicWaveNode ** front_node);
 void populate_stream();
 void clear_stream();
+bool is_stream_valid();
+double get_sample_R();
+double get_sample_L();
 
 #endif

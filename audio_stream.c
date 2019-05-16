@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "audio_stream.h"
 
@@ -70,4 +71,42 @@ void advance_stream(struct MusicWaveNode ** front_node){
 	
 	//reattach the rest of the queue to the front
 	*front_node = next_node;
+}
+
+bool is_stream_valid(){
+	return audio_stream.list_front_R != NULL && audio_stream.list_front_L != NULL;
+}
+
+double get_sample_R(){
+	//store the sample to be returned
+	double to_return = audio_stream.list_front_R->wave.waveform[audio_stream.current_location_R];
+	
+	//increment the next sample location
+	audio_stream.current_location_R++;
+	
+	//if the current wave has reached the end, advance and reset location/length
+	if(audio_stream.current_location_R == audio_stream.list_front_R->wave.length){
+		advance_stream(&audio_stream.list_front_R);
+		audio_stream.current_location_R = 0;
+		audio_stream.length_R--;
+	}
+	
+	return to_return;	
+}
+
+double get_sample_L(){
+	//store the sample to be returned
+	double to_return = audio_stream.list_front_L->wave.waveform[audio_stream.current_location_L];
+	
+	//increment the next sample location
+	audio_stream.current_location_L++;
+	
+	//if the current wave has reached the end, advance and reset location/length
+	if(audio_stream.current_location_L == audio_stream.list_front_L->wave.length){
+		advance_stream(&audio_stream.list_front_L);
+		audio_stream.current_location_L = 0;
+		audio_stream.length_L--;
+	}
+	
+	return to_return;
 }
