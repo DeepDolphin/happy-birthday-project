@@ -1,6 +1,7 @@
 #include "exceptions.h"
 #include "config_A9_interrupts.h"
 #include "music.h"
+#include "audio_stream.h"
 #include "address_map_arm.h"
 #include "project_main.h"
 #include "songs.h"
@@ -10,19 +11,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-struct AudioStream audio_stream = {.current_song_location = 0,
-									.current_location_R = 0,
-									.current_location_L = 0,
-									
-									.list_front_R = NULL,
-									.list_back_R = NULL,
-									
-									.list_front_L = NULL, 
-									.list_back_L = NULL,
-									
-									.length_R = 0,
-									.length_L = 0};
-struct MusicSong current_song;
+extern struct AudioStream audio_stream;
 struct StatusFlags status_flags = {.clear_queue = false, .change_song = false, .is_playing = false};
 unsigned int volume = 10;
 const unsigned int max_volume = 20, min_volume = 1;
@@ -37,17 +26,17 @@ int main(){
 	config_keys();
 					
 	//set the current song to the test song
-	current_song = test_song;
+	audio_stream.current_song = test_song;
 	
 	//enable interrupts once all setup is finished
 	enable_A9_interrupts();
 	
 	//main loop
 	while(1){
-		//continue to populate the stream
+		//continue to populate the audio_stream
 		populate_stream();
 		
-		//clear the stream if requested
+		//clear the audio_stream if requested
 		if(status_flags.clear_queue || status_flags.change_song){
 			clear_stream();
 			
@@ -79,8 +68,8 @@ void display_status(){
 	//store all ledr displays
 	int to_display_on_ledr = 0;
 	
-	//display if the stream has been fully populated
-	if (audio_stream.current_song_location == current_song.length) 
+	//display if the audio_stream has been fully populated
+	if (audio_stream.current_song_location == audio_stream.current_song.length) 
 		to_display_on_ledr = 0b1;
 	else 
 		to_display_on_ledr = 0b0;
@@ -100,62 +89,6 @@ void display_status(){
 	*ledr_base = to_display_on_ledr;
 	*hex3_hex0_base = to_display_on_hex3_hex0;
 	*hex5_hex4_base = to_display_on_hex5_hex4;
-}
-
-void populate_stream(){
-	//check to make sure there is more song left
-	if(audio_stream.current_song_location >= current_song.length) return;
-	
-	//add a new node to the back of each queue
-	struct MusicWaveNode * node_R = malloc(sizeof(struct MusicWaveNode));
-	struct MusicWaveNode * node_L = malloc(sizeof(struct MusicWaveNode));
-	
-	node_R->wave = get_chord_wave(current_song.music_chords[audio_stream.current_song_location]);
-	node_L->wave = copy_wave(node_R->wave);
-	
-	node_R->next = NULL;
-	node_L->next = NULL;
-	
-	//append the node to the back of the queue
-	if(audio_stream.list_back_R != NULL)
-		audio_stream.list_back_R->next = node_R;
-	if(audio_stream.list_back_L != NULL)
-		audio_stream.list_back_L->next = node_L;
-	
-	audio_stream.list_back_R = node_R;
-	audio_stream.list_back_L = node_L;
-	
-	//if the front of the list is null, the added node is also the front of the list
-	if(audio_stream.list_front_R == NULL) audio_stream.list_front_R = audio_stream.list_back_R;
-	if(audio_stream.list_front_L == NULL) audio_stream.list_front_L = audio_stream.list_back_L;
-	
-	//increment the location to be the next note to be processed
-	audio_stream.current_song_location++;
-	
-	//increase the length of the audiostream
-	audio_stream.length_R++;
-	audio_stream.length_L++;
-}
-
-void clear_stream(){
-	//clear the right side
-	while(audio_stream.list_front_R != NULL)
-		advance_stream(&audio_stream.list_front_R);
-	
-	audio_stream.list_back_R = NULL;
-	audio_stream.current_location_R = 0;
-	audio_stream.length_R = 0;
-	
-	//clear the left side
-	while(audio_stream.list_front_L != NULL)
-		advance_stream(&audio_stream.list_front_L);
-	
-	audio_stream.list_back_L = NULL;
-	audio_stream.current_location_L = 0;
-	audio_stream.length_L = 0;
-	
-	//reset song location so processing can begin again
-	audio_stream.current_song_location = 0;
 }
 
 void stop_all_audio_playback(){
@@ -190,14 +123,14 @@ void stop_audio_playback(unsigned int * num_samples, volatile int * audio_fifo){
 }
 
 void start_audio_playback(){
-	//check to see if the stream is valid
+	//check to see if the audio_stream is valid
 	if(audio_stream.list_front_L == NULL || audio_stream.list_front_R == NULL) return;
 	
 	//turn on interrupts
 	volatile int * audio_base = (int*) AUDIO_BASE;
 	*audio_base = 0b0010;
 	
-	//reset location of the audio stream
+	//reset location of the audio audio_stream
 	audio_stream.current_location_R = 0;
 	audio_stream.current_location_L = 0;
 	
@@ -221,18 +154,6 @@ bool write_wave(unsigned int * num_samples, volatile int * audio_fifo, struct Mu
 	}
 	
 	return false;
-}
-
-void advance_stream(struct MusicWaveNode ** front_node){
-	//save a copy of the pointer to the next node
-	struct MusicWaveNode * next_node = (*front_node)->next;
-	
-	//free the memory from both the waveform and the node
-	free((*front_node)->wave.waveform);
-	free(*front_node);
-	
-	//reattach the rest of the queue to the front
-	*front_node = next_node;
 }
 
 void keys_ISR(){

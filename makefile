@@ -28,7 +28,7 @@ OCFLAGS		:= -O srec
 
 # Files
 HDRS		:=
-SRCS		:= project_main.c config_A9_interrupts.c exceptions.c music.c
+SRCS		:= project_main.c config_A9_interrupts.c exceptions.c music.c audio_stream.c
 OBJS		:= $(patsubst %, %.o, $(SRCS))
 
 # Targets
