@@ -2,8 +2,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <stdbool.h>
 
 #include "music.h"
+#include "address_map_arm.h"
 
 const double pi = 3.14159265358979323846;
 const int sampling_frequency = 8000;
@@ -59,10 +61,16 @@ int get_num(char * note, int octave){
 	return number + (octave * 12);
 }
 
+const double percent_lengths_ADSR[4] = {0.1, 0.4, 0.4, 0.1}; //represents the lengths of each stage of the adsr envelope
 //returns a dynamically allocated array representing the wave intensity of each sample for the chord
 struct MusicWave get_chord_wave(struct MusicChord music_chord){
 	//find the number of samples for the duration given
 	unsigned int number_of_samples = (unsigned int) floor(music_chord.duration * sampling_frequency);
+	
+	//find the index of the start of each stage in the adsr envelope
+	unsigned int delay_start = (unsigned int) floor(percent_lengths_ADSR[0] * number_of_samples);
+	unsigned int sustain_start = (unsigned int) floor(delay_start + percent_lengths_ADSR[1] * number_of_samples);
+	unsigned int release_start = (unsigned int) floor(sustain_start + percent_lengths_ADSR[2] * number_of_samples);
 	
 	//the full wave of all notes summed together
 	double * wave_array = malloc(number_of_samples * sizeof(double));
@@ -82,9 +90,31 @@ struct MusicWave get_chord_wave(struct MusicChord music_chord){
 		}
 	}
 	
-	//increase the volume of the wave
+	//increase the volume of the wave and apply adsr envelope if wanted
+	double peak_volume = music_chord.intensity * default_amplitude;
+	double sustain_volume = 0.4 * peak_volume;
+	bool apply_ADSR_envelope = (*((int *) SW_BASE) >> 9) == 0b1;
 	for(unsigned int i = 0; i < number_of_samples; i++){
-		wave_array[i] *= music_chord.intensity * default_amplitude;
+		if(apply_ADSR_envelope && wave_array[i] != 0){
+			//check which stage the sample is part of
+			if(i < delay_start){ //part of attack
+				double sample_volume = (peak_volume / delay_start) * i;
+				
+				wave_array[i] *= sample_volume;
+			} else if (i < sustain_start){ //part of delay
+				double sample_volume = peak_volume - (((peak_volume - sustain_volume) / (sustain_start - delay_start)) * (i - delay_start));
+				
+				wave_array[i] *= sample_volume;
+			} else if (i < release_start){ //part of sustain
+				wave_array[i] *= sustain_volume;
+			} else { //part of release
+				double sample_volume = sustain_volume - ((sustain_volume / (number_of_samples - release_start)) * (i - release_start));
+				
+				wave_array[i] *= sample_volume;
+			}
+		} else {
+			wave_array[i] *= peak_volume;
+		}
 	}
 
 	struct MusicWave wave = {.waveform = wave_array, .length = number_of_samples};

@@ -47,13 +47,14 @@ int main(){
 		
 		//change current song if requested
 		if(status_flags.change_song){
-			unsigned int switches = *sw_base;
+			//use the first four switches to pick song
+			unsigned int song_offset = (*sw_base) & 0xF;
 		
 			//deconstructs the current stream
 			deconstruct_stream();
 			
 			//changes the song based on switches
-			audio_stream.current_song = song_list + switches;
+			audio_stream.current_song = song_list + song_offset;
 		
 			//re-initializes the stream
 			initialize_stream();
