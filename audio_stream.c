@@ -9,16 +9,16 @@ extern const double sampling_period;
 //initializes the stream assuming the current song is correct
 void initialize_stream(){
 	//allocate memory for the stream
-	audio_stream.current_playback_locations = malloc(sizeof(unsigned int) * audio_stream.current_song.num_tracks);
-	audio_stream.current_process_locations = malloc(sizeof(unsigned int) * audio_stream.current_song.num_tracks);
+	audio_stream.current_playback_locations = malloc(sizeof(unsigned int) * audio_stream.current_song->num_tracks);
+	audio_stream.current_process_locations = malloc(sizeof(unsigned int) * audio_stream.current_song->num_tracks);
 	
-	audio_stream.queue_fronts = malloc(sizeof(struct MusicWaveNode *) * audio_stream.current_song.num_tracks);
-	audio_stream.queue_backs = malloc(sizeof(struct MusicWaveNode *) * audio_stream.current_song.num_tracks);
+	audio_stream.queue_fronts = malloc(sizeof(struct MusicWaveNode *) * audio_stream.current_song->num_tracks);
+	audio_stream.queue_backs = malloc(sizeof(struct MusicWaveNode *) * audio_stream.current_song->num_tracks);
 	
-	audio_stream.durations = malloc(sizeof(double) * audio_stream.current_song.num_tracks);
+	audio_stream.durations = malloc(sizeof(double) * audio_stream.current_song->num_tracks);
 	
 	//initialize all variables
-	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
 		audio_stream.current_playback_locations[i] = 0;
 		audio_stream.current_process_locations[i] = 0;
 		
@@ -29,12 +29,22 @@ void initialize_stream(){
 	}
 }
 
+//deconstructs the stream and frees all memory allocated
+void deconstruct_stream(){
+	//assumes all queues have been cleared already
+	free(audio_stream.current_playback_locations);
+	free(audio_stream.current_process_locations);
+	free(audio_stream.queue_fronts);
+	free(audio_stream.queue_backs);
+	free(audio_stream.durations);
+}
+
 //processes one chord of the shortest duration track
 void populate_stream(){
 	unsigned int i = get_next_processed_track();
 	
 	//retrieve the current track
-	struct MusicTrack current_track = audio_stream.current_song.music_tracks[i];
+	struct MusicTrack current_track = audio_stream.current_song->music_tracks[i];
 	
 	//check to make sure there is more song left for the respective track
 	if(audio_stream.current_process_locations[i] >= current_track.length) return;
@@ -66,7 +76,7 @@ void populate_stream(){
 
 //clears the stream but keeps the current song the same
 void clear_stream(){
-	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
 		//advance the stream to the end
 		while(audio_stream.queue_fronts[i] != NULL)
 			advance_stream(&audio_stream.queue_fronts[i]);
@@ -92,8 +102,17 @@ void advance_stream(struct MusicWaveNode ** front_node){
 }
 
 bool is_stream_valid(){
-	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
 		if(audio_stream.queue_fronts[i] == NULL) return false;
+	}
+	
+	return true;
+}
+
+bool is_stream_fully_processed(){
+	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
+		if(audio_stream.current_process_locations[i] < audio_stream.current_song->music_tracks[i].length)
+			return false;
 	}
 	
 	return true;
@@ -102,8 +121,8 @@ bool is_stream_valid(){
 //finds the next valid track with least processed time
 unsigned int get_next_processed_track(){
 	unsigned int shortest_duration_index = 0;
-	for(unsigned int i = 1; i < audio_stream.current_song.num_tracks; i++){
-		if(audio_stream.current_process_locations[i] < audio_stream.current_song.music_tracks[i].length 
+	for(unsigned int i = 1; i < audio_stream.current_song->num_tracks; i++){
+		if(audio_stream.current_process_locations[i] < audio_stream.current_song->music_tracks[i].length 
 			&& audio_stream.durations[i] < audio_stream.durations[shortest_duration_index]){
 			shortest_duration_index = i;
 		}
@@ -114,7 +133,7 @@ unsigned int get_next_processed_track(){
 //finds the track with the most processed time and returns the duration of it
 double get_time_left(){
 	unsigned int longest_duration_index = 0;
-	for(unsigned int i = 1; i < audio_stream.current_song.num_tracks; i++){
+	for(unsigned int i = 1; i < audio_stream.current_song->num_tracks; i++){
 		if(audio_stream.durations[i] > audio_stream.durations[longest_duration_index]){
 			longest_duration_index = i;
 		}
@@ -128,8 +147,8 @@ double get_sample(char playback_type){
 	double to_return = 0;
 	
 	//check each track to see if it is to be placed on the right
-	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
-		struct MusicTrack current_track = audio_stream.current_song.music_tracks[i];
+	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
+		struct MusicTrack current_track = audio_stream.current_song->music_tracks[i];
 		
 		if(current_track.playback_type == playback_type){
 			to_return += audio_stream.queue_fronts[i]->wave.waveform[audio_stream.current_playback_locations[i]];

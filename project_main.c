@@ -26,7 +26,7 @@ int main(){
 	config_keys();
 					
 	//initialize the audio stream
-	audio_stream.current_song = test_song;
+	audio_stream.current_song = song_list;
 	initialize_stream();
 	
 	//enable interrupts once all setup is finished
@@ -47,8 +47,16 @@ int main(){
 		
 		//change current song if requested
 		if(status_flags.change_song){
-			int switches = *sw_base;
+			unsigned int switches = *sw_base;
 		
+			//deconstructs the current stream
+			deconstruct_stream();
+			
+			//changes the song based on switches
+			audio_stream.current_song = song_list + switches;
+		
+			//re-initializes the stream
+			initialize_stream();
 		
 			//reset the flag so that changing the song does not happen again
 			status_flags.change_song = false;
@@ -70,7 +78,7 @@ void display_status(){
 	int to_display_on_ledr = 0;
 	
 	//display if the audio_stream has been fully populated
-	if (audio_stream.current_process_locations[0] == audio_stream.current_song.music_tracks[0].length) 
+	if (is_stream_fully_processed()) 
 		to_display_on_ledr = 0b1;
 	
 	//display if the audio_stream is currently valid

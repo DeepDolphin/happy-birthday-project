@@ -27,14 +27,16 @@ struct AudioStream {
 	double * durations;
 	
 	//current song being played
-	struct MusicSong current_song;
+	const struct MusicSong * current_song;
 };
 
 void advance_stream(struct MusicWaveNode ** front_node);
 void populate_stream();
 void clear_stream();
 void initialize_stream();
+void deconstruct_stream();
 bool is_stream_valid();
+bool is_stream_fully_processed();
 unsigned int get_next_processed_track();
 double get_time_left();
 double get_sample(char playback_type);
