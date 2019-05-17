@@ -10,7 +10,7 @@
 const double pi = 3.14159265358979323846;
 const int sampling_frequency = 8000;
 const double sampling_period = 0.000125;
-const double default_amplitude = INT_MAX / 500.0;
+const double default_amplitude = INT_MAX / 400.0;
 
 //returns the frequency requested of the key number given
 double get_frequency(char * note, int octave){
@@ -61,7 +61,7 @@ int get_num(char * note, int octave){
 	return number + (octave * 12);
 }
 
-const double percent_lengths_ADSR[4] = {0.1, 0.4, 0.4, 0.1}; //represents the lengths of each stage of the adsr envelope
+const double percent_lengths_ADSR[4] = {0.1, 0.4, 0.4, 0.1}; //represents the lengths of each stage of the adsr envelope (must add up to 1)
 //returns a dynamically allocated array representing the wave intensity of each sample for the chord
 struct MusicWave get_chord_wave(struct MusicChord music_chord){
 	//find the number of samples for the duration given
@@ -88,6 +88,8 @@ struct MusicWave get_chord_wave(struct MusicChord music_chord){
 		for(unsigned int j = 0; j < number_of_samples; j++){
 			wave_array[j] += note_wave.waveform[j];
 		}
+		
+		free(note_wave.waveform);
 	}
 	
 	//increase the volume of the wave and apply adsr envelope if wanted
@@ -113,7 +115,7 @@ struct MusicWave get_chord_wave(struct MusicChord music_chord){
 				wave_array[i] *= sample_volume;
 			}
 		} else {
-			wave_array[i] *= peak_volume;
+			wave_array[i] *= sustain_volume;
 		}
 	}
 
@@ -138,24 +140,21 @@ struct MusicWave get_note_wave(struct MusicNote music_note, unsigned int number_
 	double current_time = 0;
 	
 	//loop through the entire array, taking samples of the wave at each time given
-	for(unsigned int index = 0; index < number_of_samples; index++){		
+	for(unsigned int index = 0; index < number_of_samples; index++){
+		//waveform of the fundamental harmonic
 		wave_array[index] = sin(2 * pi * frequency * current_time);
 		
+		//add some of the second harmonic
+		wave_array[index] += 0.5 * sin(4 * pi * frequency * current_time);
+		
+		//add some of the third harmonic
+		wave_array[index] += 0.25 * sin(6 * pi * frequency * current_time);
+		
+		//increment the current time
 		current_time += sampling_period;
 	}
 	
 	//return the sampled wave
 	struct MusicWave wave = {.waveform = wave_array, .length = number_of_samples};
 	return wave;
-}
-
-//returns a copy of the given music wave
-struct MusicWave copy_wave(struct MusicWave wave){
-	double * wave_array = malloc(wave.length * sizeof(double));
-	
-	for(unsigned int i = 0; i < wave.length; i++)
-		wave_array[i] = wave.waveform[i];
-	
-	struct MusicWave wave_copy = {.waveform = wave_array, .length = wave.length};
-	return wave_copy;
 }

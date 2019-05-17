@@ -19,7 +19,7 @@ const struct MusicSong song_list[2] = {
 															{.note = "B", .octave = 4},
 															{.note = "Ds", .octave = 4},
 															{.note = "Fs", .octave = 4},
-															}, .duration = 0.5, .intensity = 1, .num_notes = 3}
+															}, .duration = 0.5, .intensity = 1, .num_notes = 3},
 					}, .playback_type = PLAYBACK_MONO, .length = 3}
 				}, .num_tracks = 1},
 				
