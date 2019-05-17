@@ -54,7 +54,7 @@ Disassembly of section .text:
       d0:	1affffe3 	bne	64 <__cs3_start_c+0x20>
       d4:	eb00191d 	bl	6550 <__cs3_premain>
       d8:	00000001 	.word	0x00000001
-      dc:	000069bc 	.word	0x000069bc
+      dc:	000069c4 	.word	0x000069c4
 
 000000e0 <__cs3_start_asm_sim>:
       e0:	e28f103c 	add	r1, pc, #60	; 0x3c
@@ -73,10 +73,10 @@ Disassembly of section .text:
      114:	15810000 	strne	r0, [r1]
      118:	eaffffc9 	b	44 <__cs3_start_c>
      11c:	3ffffff8 	.word	0x3ffffff8
-     120:	000072b8 	.word	0x000072b8
+     120:	000076b8 	.word	0x000076b8
 
 00000124 <__cs3_heap_start_ptr>:
-     124:	00007330 	.word	0x00007330
+     124:	00007730 	.word	0x00007730
 
 00000128 <_start>:
      128:	e51fd000 	ldr	sp, [pc, #-0]	; 130 <_start+0x8>
@@ -98,8 +98,8 @@ Disassembly of section .text:
      160:	e1a0e00f 	mov	lr, pc
      164:	e12fff13 	bx	r3
      168:	eafffff7 	b	14c <deregister_tm_clones+0x18>
-     16c:	000072c0 	.word	0x000072c0
-     170:	000072c3 	.word	0x000072c3
+     16c:	000076c0 	.word	0x000076c0
+     170:	000076c3 	.word	0x000076c3
      174:	00000000 	.word	0x00000000
 
 00000178 <register_tm_clones>:
@@ -119,8 +119,8 @@ Disassembly of section .text:
      1ac:	e1a0e00f 	mov	lr, pc
      1b0:	e12fff12 	bx	r2
      1b4:	eafffff7 	b	198 <register_tm_clones+0x20>
-     1b8:	000072c0 	.word	0x000072c0
-     1bc:	000072c0 	.word	0x000072c0
+     1b8:	000076c0 	.word	0x000076c0
+     1bc:	000076c0 	.word	0x000076c0
      1c0:	00000000 	.word	0x00000000
 
 000001c4 <__do_global_dtors_aux>:
@@ -138,7 +138,7 @@ Disassembly of section .text:
      1f0:	e5c43000 	strb	r3, [r4]
      1f4:	e8bd4010 	pop	{r4, lr}
      1f8:	e12fff1e 	bx	lr
-     1fc:	000072c0 	.word	0x000072c0
+     1fc:	000076c0 	.word	0x000076c0
      200:	00000000 	.word	0x00000000
      204:	000066b0 	.word	0x000066b0
 
@@ -161,8 +161,8 @@ Disassembly of section .text:
      244:	eaffffcb 	b	178 <register_tm_clones>
      248:	00000000 	.word	0x00000000
      24c:	000066b0 	.word	0x000066b0
-     250:	000072c4 	.word	0x000072c4
-     254:	000069c0 	.word	0x000069c0
+     250:	000076c4 	.word	0x000076c4
+     254:	000069c8 	.word	0x000069c8
      258:	00000000 	.word	0x00000000
 
 0000025c <num_to_seg7_hex>:
@@ -302,7 +302,7 @@ void display_status(){
 	
 	//display the current volume on the hexes
 	to_display_on_hex3_hex0 = num_to_seg7_dec(volume);
-     2e4:	e30639c8 	movw	r3, #27080	; 0x69c8
+     2e4:	e30639d0 	movw	r3, #27088	; 0x69d0
      2e8:	e3403000 	movt	r3, #0
      2ec:	e5930000 	ldr	r0, [r3]
      2f0:	ebffffe3 	bl	284 <num_to_seg7_dec>
@@ -372,7 +372,7 @@ int main(){
 					
 	//initialize the audio stream
 	audio_stream.current_song = song_list;
-     38c:	e30732e0 	movw	r3, #29408	; 0x72e0
+     38c:	e30736e0 	movw	r3, #30432	; 0x76e0
      390:	e3403000 	movt	r3, #0
      394:	e59f2078 	ldr	r2, [pc, #120]	; 414 <main+0x9c>
      398:	e5832014 	str	r2, [r3, #20]
@@ -388,7 +388,7 @@ int main(){
 		
 		//clear the audio_stream if requested
 		if(status_flags.clear_queue || status_flags.change_song){
-     3a4:	e30742dc 	movw	r4, #29404	; 0x72dc
+     3a4:	e30746dc 	movw	r4, #30428	; 0x76dc
      3a8:	e3404000 	movt	r4, #0
 			clear_stream();
 			
@@ -408,7 +408,7 @@ int main(){
 			
 			//changes the song based on switches
 			audio_stream.current_song = song_list + switches;
-     3b8:	e30762e0 	movw	r6, #29408	; 0x72e0
+     3b8:	e30766e0 	movw	r6, #30432	; 0x76e0
      3bc:	e3406000 	movt	r6, #0
      3c0:	e59f804c 	ldr	r8, [pc, #76]	; 414 <main+0x9c>
 	enable_A9_interrupts();
@@ -509,7 +509,7 @@ void stop_audio_playback(unsigned int * num_samples, volatile int * audio_fifo){
 	
 	//set the status flags
 	status_flags.is_playing = false;
-     450:	e30732dc 	movw	r3, #29404	; 0x72dc
+     450:	e30736dc 	movw	r3, #30428	; 0x76dc
      454:	e3403000 	movt	r3, #0
      458:	e5c32002 	strb	r2, [r3, #2]
      45c:	e12fff1e 	bx	lr
@@ -578,7 +578,7 @@ void start_audio_playback(){
 	
 	//set the playing flag
 	status_flags.is_playing = true;
-     4d0:	e30732dc 	movw	r3, #29404	; 0x72dc
+     4d0:	e30736dc 	movw	r3, #30428	; 0x76dc
      4d4:	e3403000 	movt	r3, #0
      4d8:	e3a02001 	mov	r2, #1
      4dc:	e5c32002 	strb	r2, [r3, #2]
@@ -604,7 +604,7 @@ void keys_ISR(){
      4f8:	e3140001 	tst	r4, #1
      4fc:	0a000007 	beq	520 <keys_ISR+0x3c>
 		if(status_flags.is_playing){
-     500:	e30732dc 	movw	r3, #29404	; 0x72dc
+     500:	e30736dc 	movw	r3, #30428	; 0x76dc
      504:	e3403000 	movt	r3, #0
      508:	e5d33002 	ldrb	r3, [r3, #2]
      50c:	e3530000 	cmp	r3, #0
@@ -623,7 +623,7 @@ void keys_ISR(){
      520:	e3140002 	tst	r4, #2
      524:	0a000007 	beq	548 <keys_ISR+0x64>
 		status_flags.change_song = true;
-     528:	e30732dc 	movw	r3, #29404	; 0x72dc
+     528:	e30736dc 	movw	r3, #30428	; 0x76dc
      52c:	e3403000 	movt	r3, #0
      530:	e3a02001 	mov	r2, #1
      534:	e5c32001 	strb	r2, [r3, #1]
@@ -643,11 +643,11 @@ void keys_ISR(){
      548:	e3140004 	tst	r4, #4
      54c:	0a000007 	beq	570 <keys_ISR+0x8c>
 		if(volume < max_volume) volume++;
-     550:	e30639c8 	movw	r3, #27080	; 0x69c8
+     550:	e30639d0 	movw	r3, #27088	; 0x69d0
      554:	e3403000 	movt	r3, #0
      558:	e5933000 	ldr	r3, [r3]
      55c:	e3530013 	cmp	r3, #19
-     560:	930629c8 	movwls	r2, #27080	; 0x69c8
+     560:	930629d0 	movwls	r2, #27088	; 0x69d0
      564:	93402000 	movtls	r2, #0
      568:	92833001 	addls	r3, r3, #1
      56c:	95823000 	strls	r3, [r2]
@@ -658,11 +658,11 @@ void keys_ISR(){
      570:	e3140008 	tst	r4, #8
      574:	08bd8010 	popeq	{r4, pc}
 		if(volume > min_volume) volume--;
-     578:	e30639c8 	movw	r3, #27080	; 0x69c8
+     578:	e30639d0 	movw	r3, #27088	; 0x69d0
      57c:	e3403000 	movt	r3, #0
      580:	e5932000 	ldr	r2, [r3]
      584:	e3520001 	cmp	r2, #1
-     588:	830639c8 	movwhi	r3, #27080	; 0x69c8
+     588:	830639d0 	movwhi	r3, #27088	; 0x69d0
      58c:	83403000 	movthi	r3, #0
      590:	82422001 	subhi	r2, r2, #1
      594:	85832000 	strhi	r2, [r3]
@@ -701,7 +701,7 @@ void audio_ISR(){
 		if(num_samples_right > 0){
 			//retrieve and write a sample to the right
 			*audio_right = (int) (volume * (get_sample(PLAYBACK_STEREO_R) + sample_mono));
-     5c4:	e306b9c8 	movw	r11, #27080	; 0x69c8
+     5c4:	e306b9d0 	movw	r11, #27088	; 0x69d0
      5c8:	e340b000 	movt	r11, #0
      5cc:	e303afff 	movw	r10, #16383	; 0x3fff
      5d0:	e34faf20 	movt	r10, #65312	; 0xff20
@@ -780,7 +780,7 @@ void audio_ISR(){
 			stop_all_audio_playback();
      68c:	ebffff73 	bl	460 <stop_all_audio_playback>
 			status_flags.clear_queue = true;
-     690:	e30732dc 	movw	r3, #29404	; 0x72dc
+     690:	e30736dc 	movw	r3, #30428	; 0x76dc
      694:	e3403000 	movt	r3, #0
      698:	e3a02001 	mov	r2, #1
      69c:	e5c32000 	strb	r2, [r3]
@@ -1069,7 +1069,7 @@ int get_num(char * note, int octave){
      858:	e1a04001 	mov	r4, r1
 	int number;
 	if(!strcmp(note, "C")){
-     85c:	e3061718 	movw	r1, #26392	; 0x6718
+     85c:	e3061704 	movw	r1, #26372	; 0x6704
      860:	e3401000 	movt	r1, #0
      864:	eb0014b6 	bl	5b44 <strcmp>
      868:	e3500000 	cmp	r0, #0
@@ -1077,13 +1077,13 @@ int get_num(char * note, int octave){
 		number = 1;
 	} else if(!strcmp(note, "Cs") || !strcmp(note, "Db")){
      870:	e1a00005 	mov	r0, r5
-     874:	e30616e0 	movw	r1, #26336	; 0x66e0
+     874:	e30616e8 	movw	r1, #26344	; 0x66e8
      878:	e3401000 	movt	r1, #0
      87c:	eb0014b0 	bl	5b44 <strcmp>
      880:	e3500000 	cmp	r0, #0
      884:	0a00005c 	beq	9fc <get_num+0x1ac>
      888:	e1a00005 	mov	r0, r5
-     88c:	e306171c 	movw	r1, #26396	; 0x671c
+     88c:	e3061730 	movw	r1, #26416	; 0x6730
      890:	e3401000 	movt	r1, #0
      894:	eb0014aa 	bl	5b44 <strcmp>
      898:	e3500000 	cmp	r0, #0
@@ -1091,7 +1091,7 @@ int get_num(char * note, int octave){
 		number = 2;
 	} else if(!strcmp(note, "D")){
      8a0:	e1a00005 	mov	r0, r5
-     8a4:	e3061720 	movw	r1, #26400	; 0x6720
+     8a4:	e3061708 	movw	r1, #26376	; 0x6708
      8a8:	e3401000 	movt	r1, #0
      8ac:	eb0014a4 	bl	5b44 <strcmp>
      8b0:	e3500000 	cmp	r0, #0
@@ -1099,13 +1099,13 @@ int get_num(char * note, int octave){
 		number = 3;
 	} else if(!strcmp(note, "Ds") || !strcmp(note, "Eb")){
      8b8:	e1a00005 	mov	r0, r5
-     8bc:	e30616f0 	movw	r1, #26352	; 0x66f0
+     8bc:	e30616f8 	movw	r1, #26360	; 0x66f8
      8c0:	e3401000 	movt	r1, #0
      8c4:	eb00149e 	bl	5b44 <strcmp>
      8c8:	e3500000 	cmp	r0, #0
      8cc:	0a000050 	beq	a14 <get_num+0x1c4>
      8d0:	e1a00005 	mov	r0, r5
-     8d4:	e3061724 	movw	r1, #26404	; 0x6724
+     8d4:	e3061734 	movw	r1, #26420	; 0x6734
      8d8:	e3401000 	movt	r1, #0
      8dc:	eb001498 	bl	5b44 <strcmp>
      8e0:	e3500000 	cmp	r0, #0
@@ -1113,7 +1113,7 @@ int get_num(char * note, int octave){
 		number = 4;
 	} else if(!strcmp(note, "E")){
      8e8:	e1a00005 	mov	r0, r5
-     8ec:	e30616e4 	movw	r1, #26340	; 0x66e4
+     8ec:	e30616ec 	movw	r1, #26348	; 0x66ec
      8f0:	e3401000 	movt	r1, #0
      8f4:	eb001492 	bl	5b44 <strcmp>
      8f8:	e3500000 	cmp	r0, #0
@@ -1121,7 +1121,7 @@ int get_num(char * note, int octave){
 		number = 5;
 	} else if(!strcmp(note, "F")){
      900:	e1a00005 	mov	r0, r5
-     904:	e3061728 	movw	r1, #26408	; 0x6728
+     904:	e306170c 	movw	r1, #26380	; 0x670c
      908:	e3401000 	movt	r1, #0
      90c:	eb00148c 	bl	5b44 <strcmp>
      910:	e3500000 	cmp	r0, #0
@@ -1129,13 +1129,13 @@ int get_num(char * note, int octave){
 		number = 6;
 	} else if(!strcmp(note, "Fs") || !strcmp(note, "Gb")){
      918:	e1a00005 	mov	r0, r5
-     91c:	e30616f4 	movw	r1, #26356	; 0x66f4
+     91c:	e30616fc 	movw	r1, #26364	; 0x66fc
      920:	e3401000 	movt	r1, #0
      924:	eb001486 	bl	5b44 <strcmp>
      928:	e3500000 	cmp	r0, #0
      92c:	0a000040 	beq	a34 <get_num+0x1e4>
      930:	e1a00005 	mov	r0, r5
-     934:	e306172c 	movw	r1, #26412	; 0x672c
+     934:	e3061738 	movw	r1, #26424	; 0x6738
      938:	e3401000 	movt	r1, #0
      93c:	eb001480 	bl	5b44 <strcmp>
      940:	e3500000 	cmp	r0, #0
@@ -1143,7 +1143,7 @@ int get_num(char * note, int octave){
 		number = 7;
 	} else if(!strcmp(note, "G")){
      948:	e1a00005 	mov	r0, r5
-     94c:	e3061730 	movw	r1, #26416	; 0x6730
+     94c:	e3061700 	movw	r1, #26368	; 0x6700
      950:	e3401000 	movt	r1, #0
      954:	eb00147a 	bl	5b44 <strcmp>
      958:	e3500000 	cmp	r0, #0
@@ -1151,13 +1151,13 @@ int get_num(char * note, int octave){
 		number = 8;
 	} else if(!strcmp(note, "Gs") || !strcmp(note, "Ab")){
      960:	e1a00005 	mov	r0, r5
-     964:	e3061734 	movw	r1, #26420	; 0x6734
+     964:	e306173c 	movw	r1, #26428	; 0x673c
      968:	e3401000 	movt	r1, #0
      96c:	eb001474 	bl	5b44 <strcmp>
      970:	e3500000 	cmp	r0, #0
      974:	0a000034 	beq	a4c <get_num+0x1fc>
      978:	e1a00005 	mov	r0, r5
-     97c:	e3061738 	movw	r1, #26424	; 0x6738
+     97c:	e3061740 	movw	r1, #26432	; 0x6740
      980:	e3401000 	movt	r1, #0
      984:	eb00146e 	bl	5b44 <strcmp>
      988:	e3500000 	cmp	r0, #0
@@ -1165,7 +1165,7 @@ int get_num(char * note, int octave){
 		number = 9;
 	} else if(!strcmp(note, "A")){
      990:	e1a00005 	mov	r0, r5
-     994:	e30616dc 	movw	r1, #26332	; 0x66dc
+     994:	e30616e4 	movw	r1, #26340	; 0x66e4
      998:	e3401000 	movt	r1, #0
      99c:	eb001468 	bl	5b44 <strcmp>
      9a0:	e3500000 	cmp	r0, #0
@@ -1173,13 +1173,13 @@ int get_num(char * note, int octave){
 		number = 10;
 	} else if(!strcmp(note, "As") || !strcmp(note, "Bb")){
      9a8:	e1a00005 	mov	r0, r5
-     9ac:	e306173c 	movw	r1, #26428	; 0x673c
+     9ac:	e3061744 	movw	r1, #26436	; 0x6744
      9b0:	e3401000 	movt	r1, #0
      9b4:	eb001462 	bl	5b44 <strcmp>
      9b8:	e3500000 	cmp	r0, #0
      9bc:	0a000028 	beq	a64 <get_num+0x214>
      9c0:	e1a00005 	mov	r0, r5
-     9c4:	e3061740 	movw	r1, #26432	; 0x6740
+     9c4:	e3061748 	movw	r1, #26440	; 0x6748
      9c8:	e3401000 	movt	r1, #0
      9cc:	eb00145c 	bl	5b44 <strcmp>
      9d0:	e3500000 	cmp	r0, #0
@@ -1187,7 +1187,7 @@ int get_num(char * note, int octave){
 		number = 11;
 	} else if(!strcmp(note, "B")){
      9d8:	e1a00005 	mov	r0, r5
-     9dc:	e30616ec 	movw	r1, #26348	; 0x66ec
+     9dc:	e30616f4 	movw	r1, #26356	; 0x66f4
      9e0:	e3401000 	movt	r1, #0
      9e4:	eb001456 	bl	5b44 <strcmp>
      9e8:	e3500000 	cmp	r0, #0
@@ -1278,7 +1278,7 @@ double get_frequency(char * note, int octave){
 	
 	const double middle_A_freq = 440; //Hz
 	const int middle_A_num = get_num("A", 4); //number pertaining to the middle A
-     a90:	e30606dc 	movw	r0, #26332	; 0x66dc
+     a90:	e30606e4 	movw	r0, #26340	; 0x66e4
      a94:	e3400000 	movt	r0, #0
      a98:	e3a01004 	mov	r1, #4
      a9c:	ebffff6b 	bl	850 <get_num>
@@ -1330,7 +1330,7 @@ struct MusicWave get_note_wave(struct MusicNote music_note, unsigned int number_
 	double frequency;
 	if(!strcmp(music_note.note, "S")){ //if the note is silent, return no frequency and zero the intensity
      b04:	e1a00004 	mov	r0, r4
-     b08:	e30616e8 	movw	r1, #26344	; 0x66e8
+     b08:	e30616f0 	movw	r1, #26352	; 0x66f0
      b0c:	e3401000 	movt	r1, #0
      b10:	eb00140b 	bl	5b44 <strcmp>
      b14:	e3500000 	cmp	r0, #0
@@ -1669,7 +1669,7 @@ void initialize_stream(){
      d70:	e92d4070 	push	{r4, r5, r6, lr}
 	//allocate memory for the stream
 	audio_stream.current_playback_locations = malloc(sizeof(unsigned int) * audio_stream.current_song->num_tracks);
-     d74:	e30742e0 	movw	r4, #29408	; 0x72e0
+     d74:	e30746e0 	movw	r4, #30432	; 0x76e0
      d78:	e3404000 	movt	r4, #0
      d7c:	e5945014 	ldr	r5, [r4, #20]
      d80:	e5956004 	ldr	r6, [r5, #4]
@@ -1763,7 +1763,7 @@ void deconstruct_stream(){
      e38:	e92d4010 	push	{r4, lr}
 	//assumes all queues have been cleared already
 	free(audio_stream.current_playback_locations);
-     e3c:	e30742e0 	movw	r4, #29408	; 0x72e0
+     e3c:	e30746e0 	movw	r4, #30432	; 0x76e0
      e40:	e3404000 	movt	r4, #0
      e44:	e5940000 	ldr	r0, [r4]
      e48:	eb00115c 	bl	53c0 <free>
@@ -1817,7 +1817,7 @@ void advance_stream(struct MusicWaveNode ** front_node){
 void clear_stream(){
      e98:	e92d45f8 	push	{r3, r4, r5, r6, r7, r8, r10, lr}
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
-     e9c:	e30732e0 	movw	r3, #29408	; 0x72e0
+     e9c:	e30736e0 	movw	r3, #30432	; 0x76e0
      ea0:	e3403000 	movt	r3, #0
      ea4:	e5933014 	ldr	r3, [r3, #20]
      ea8:	e5933004 	ldr	r3, [r3, #4]
@@ -1870,7 +1870,7 @@ void clear_stream(){
      f0c:	e3a08000 	mov	r8, #0
 		//advance the stream to the end
 		while(audio_stream.queue_fronts[i] != NULL)
-     f10:	e30772e0 	movw	r7, #29408	; 0x72e0
+     f10:	e30776e0 	movw	r7, #30432	; 0x76e0
      f14:	e3407000 	movt	r7, #0
 			advance_stream(&audio_stream.queue_fronts[i]);
 		
@@ -1903,14 +1903,14 @@ void clear_stream(){
 
 bool is_stream_valid(){
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
-     f40:	e30732e0 	movw	r3, #29408	; 0x72e0
+     f40:	e30736e0 	movw	r3, #30432	; 0x76e0
      f44:	e3403000 	movt	r3, #0
      f48:	e5933014 	ldr	r3, [r3, #20]
      f4c:	e5930004 	ldr	r0, [r3, #4]
      f50:	e3500000 	cmp	r0, #0
      f54:	0a00000f 	beq	f98 <is_stream_valid+0x58>
 		if(audio_stream.queue_fronts[i] == NULL) return false;
-     f58:	e30732e0 	movw	r3, #29408	; 0x72e0
+     f58:	e30736e0 	movw	r3, #30432	; 0x76e0
      f5c:	e3403000 	movt	r3, #0
      f60:	e5932008 	ldr	r2, [r3, #8]
      f64:	e5923000 	ldr	r3, [r2]
@@ -1965,14 +1965,14 @@ bool is_stream_valid(){
 bool is_stream_fully_processed(){
      fb0:	e52d4004 	push	{r4}		; (str r4, [sp, #-4]!)
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
-     fb4:	e30732e0 	movw	r3, #29408	; 0x72e0
+     fb4:	e30736e0 	movw	r3, #30432	; 0x76e0
      fb8:	e3403000 	movt	r3, #0
      fbc:	e5932014 	ldr	r2, [r3, #20]
      fc0:	e5924004 	ldr	r4, [r2, #4]
      fc4:	e3540000 	cmp	r4, #0
      fc8:	0a000013 	beq	101c <is_stream_fully_processed+0x6c>
 		if(audio_stream.current_process_locations[i] < audio_stream.current_song->music_tracks[i].length)
-     fcc:	e30732e0 	movw	r3, #29408	; 0x72e0
+     fcc:	e30736e0 	movw	r3, #30432	; 0x76e0
      fd0:	e3403000 	movt	r3, #0
      fd4:	e5931004 	ldr	r1, [r3, #4]
      fd8:	e5922000 	ldr	r2, [r2]
@@ -2035,7 +2035,7 @@ unsigned int get_next_processed_track(){
     1038:	e92d45f8 	push	{r3, r4, r5, r6, r7, r8, r10, lr}
 	unsigned int shortest_duration_index = 0;
 	for(unsigned int i = 1; i < audio_stream.current_song->num_tracks; i++){
-    103c:	e30732e0 	movw	r3, #29408	; 0x72e0
+    103c:	e30736e0 	movw	r3, #30432	; 0x76e0
     1040:	e3403000 	movt	r3, #0
     1044:	e5932014 	ldr	r2, [r3, #20]
     1048:	e5928004 	ldr	r8, [r2, #4]
@@ -2043,7 +2043,7 @@ unsigned int get_next_processed_track(){
     1050:	9a000016 	bls	10b0 <get_next_processed_track+0x78>
 		if(audio_stream.current_process_locations[i] < audio_stream.current_song->music_tracks[i].length 
 			&& audio_stream.durations[i] < audio_stream.durations[shortest_duration_index]){
-    1054:	e30732e0 	movw	r3, #29408	; 0x72e0
+    1054:	e30736e0 	movw	r3, #30432	; 0x76e0
     1058:	e3403000 	movt	r3, #0
     105c:	e593a010 	ldr	r10, [r3, #16]
     1060:	e5936004 	ldr	r6, [r3, #4]
@@ -2127,7 +2127,7 @@ void populate_stream(){
 	
 	//retrieve the current track
 	struct MusicTrack current_track = audio_stream.current_song->music_tracks[i];
-    10cc:	e30732e0 	movw	r3, #29408	; 0x72e0
+    10cc:	e30736e0 	movw	r3, #30432	; 0x76e0
     10d0:	e3403000 	movt	r3, #0
     10d4:	e5931014 	ldr	r1, [r3, #20]
     10d8:	e0802080 	add	r2, r0, r0, lsl #1
@@ -2182,7 +2182,7 @@ void populate_stream(){
 	
 	//append the node to the back of the queue
 	if(audio_stream.queue_backs[i] != NULL)
-    116c:	e30732e0 	movw	r3, #29408	; 0x72e0
+    116c:	e30736e0 	movw	r3, #30432	; 0x76e0
     1170:	e3403000 	movt	r3, #0
     1174:	e593300c 	ldr	r3, [r3, #12]
     1178:	e7933106 	ldr	r3, [r3, r6, lsl #2]
@@ -2191,7 +2191,7 @@ void populate_stream(){
     1180:	15837008 	strne	r7, [r3, #8]
 	
 	audio_stream.queue_backs[i] = node;
-    1184:	e30732e0 	movw	r3, #29408	; 0x72e0
+    1184:	e30736e0 	movw	r3, #30432	; 0x76e0
     1188:	e3403000 	movt	r3, #0
     118c:	e593200c 	ldr	r2, [r3, #12]
     1190:	e7827106 	str	r7, [r2, r6, lsl #2]
@@ -2205,7 +2205,7 @@ void populate_stream(){
 	
 	//increment the location to be the next chord to be processed
 	audio_stream.current_process_locations[i]++;
-    11a4:	e30732e0 	movw	r3, #29408	; 0x72e0
+    11a4:	e30736e0 	movw	r3, #30432	; 0x76e0
     11a8:	e3403000 	movt	r3, #0
     11ac:	e5932004 	ldr	r2, [r3, #4]
     11b0:	e7921106 	ldr	r1, [r2, r6, lsl #2]
@@ -2235,14 +2235,14 @@ double get_time_left(){
     11e0:	e92d41f0 	push	{r4, r5, r6, r7, r8, lr}
 	unsigned int longest_duration_index = 0;
 	for(unsigned int i = 1; i < audio_stream.current_song->num_tracks; i++){
-    11e4:	e30732e0 	movw	r3, #29408	; 0x72e0
+    11e4:	e30736e0 	movw	r3, #30432	; 0x76e0
     11e8:	e3403000 	movt	r3, #0
     11ec:	e5933014 	ldr	r3, [r3, #20]
     11f0:	e5937004 	ldr	r7, [r3, #4]
     11f4:	e3570001 	cmp	r7, #1
     11f8:	9a00000f 	bls	123c <get_time_left+0x5c>
 		if(audio_stream.durations[i] > audio_stream.durations[longest_duration_index]){
-    11fc:	e30732e0 	movw	r3, #29408	; 0x72e0
+    11fc:	e30736e0 	movw	r3, #30432	; 0x76e0
     1200:	e3403000 	movt	r3, #0
     1204:	e5938010 	ldr	r8, [r3, #16]
     1208:	e1a06008 	mov	r6, r8
@@ -2291,7 +2291,7 @@ double get_time_left(){
 		}
 	}
 	return audio_stream.durations[longest_duration_index];
-    1240:	e30732e0 	movw	r3, #29408	; 0x72e0
+    1240:	e30736e0 	movw	r3, #30432	; 0x76e0
     1244:	e3403000 	movt	r3, #0
     1248:	e5933010 	ldr	r3, [r3, #16]
     124c:	e1a05185 	lsl	r5, r5, #3
@@ -2311,7 +2311,7 @@ double get_sample(char playback_type){
 	
 	//check each track to see if it is to be placed on the right
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
-    1264:	e30732e0 	movw	r3, #29408	; 0x72e0
+    1264:	e30736e0 	movw	r3, #30432	; 0x76e0
     1268:	e3403000 	movt	r3, #0
     126c:	e5933014 	ldr	r3, [r3, #20]
     1270:	e5932004 	ldr	r2, [r3, #4]
@@ -2334,7 +2334,7 @@ double get_sample(char playback_type){
 		
 		if(current_track.playback_type == playback_type){
 			to_return += audio_stream.queue_fronts[i]->wave.waveform[audio_stream.current_playback_locations[i]];
-    1290:	e30762e0 	movw	r6, #29408	; 0x72e0
+    1290:	e30766e0 	movw	r6, #30432	; 0x76e0
     1294:	e3406000 	movt	r6, #0
 			
 			//increment the next sample location
@@ -2342,7 +2342,7 @@ double get_sample(char playback_type){
 			
 			//decrement the duration of the track played
 			audio_stream.durations[i] -= sampling_period;
-    1298:	e306b700 	movw	r11, #26368	; 0x6700
+    1298:	e306b718 	movw	r11, #26392	; 0x6718
     129c:	e340b000 	movt	r11, #0
 	//store the sample to be returned
 	double to_return = 0;
@@ -2915,8 +2915,8 @@ double get_sample(char playback_type){
     1ad4:	058d2018 	streq	r2, [sp, #24]
     1ad8:	058d301c 	streq	r3, [sp, #28]
     1adc:	eaffffcb 	b	1a10 <pow+0x410>
-    1ae0:	00006a70 	.word	0x00006a70
-    1ae4:	00006744 	.word	0x00006744
+    1ae0:	00006e70 	.word	0x00006e70
+    1ae4:	0000674c 	.word	0x0000674c
     1ae8:	3ff00000 	.word	0x3ff00000
     1aec:	fff00000 	.word	0xfff00000
     1af0:	47efffff 	.word	0x47efffff
@@ -3124,14 +3124,14 @@ double get_sample(char playback_type){
     1e10:	7ff00000 	.word	0x7ff00000
     1e14:	3fe00000 	.word	0x3fe00000
     1e18:	41e00000 	.word	0x41e00000
-    1e1c:	00006778 	.word	0x00006778
+    1e1c:	00006780 	.word	0x00006780
     1e20:	433fffff 	.word	0x433fffff
     1e24:	00000413 	.word	0x00000413
     1e28:	3fefffff 	.word	0x3fefffff
     1e2c:	43400000 	.word	0x43400000
     1e30:	0003988e 	.word	0x0003988e
     1e34:	000bb679 	.word	0x000bb679
-    1e38:	00006748 	.word	0x00006748
+    1e38:	00006750 	.word	0x00006750
     1e3c:	3ff00000 	.word	0x3ff00000
     1e40:	e59d4008 	ldr	r4, [sp, #8]
     1e44:	e3540601 	cmp	r4, #1048576	; 0x100000
@@ -4199,9 +4199,9 @@ double get_sample(char playback_type){
     2ed4:	413921fb 	.word	0x413921fb
     2ed8:	7fefffff 	.word	0x7fefffff
     2edc:	41700000 	.word	0x41700000
-    2ee0:	000067fc 	.word	0x000067fc
+    2ee0:	00006804 	.word	0x00006804
     2ee4:	3fe00000 	.word	0x3fe00000
-    2ee8:	0000677c 	.word	0x0000677c
+    2ee8:	00006784 	.word	0x00006784
     2eec:	e28d3008 	add	r3, sp, #8
     2ef0:	e893000c 	ldm	r3, {r2, r3}
     2ef4:	eb000667 	bl	4898 <__aeabi_dsub>
@@ -5452,13 +5452,13 @@ double get_sample(char playback_type){
     4250:	e1a0c004 	mov	r12, r4
     4254:	eaffffd0 	b	419c <__kernel_rem_pio2+0xabc>
     4258:	2aaaaaab 	.word	0x2aaaaaab
-    425c:	00006908 	.word	0x00006908
+    425c:	00006910 	.word	0x00006910
     4260:	3e700000 	.word	0x3e700000
     4264:	41700000 	.word	0x41700000
     4268:	40200000 	.word	0x40200000
     426c:	3ff00000 	.word	0x3ff00000
     4270:	3fe00000 	.word	0x3fe00000
-    4274:	00006918 	.word	0x00006918
+    4274:	00006920 	.word	0x00006920
 
 00004278 <__kernel_sin>:
     4278:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}
@@ -5751,7 +5751,7 @@ double get_sample(char playback_type){
     46c4:	e1813f88 	orr	r3, r1, r8, lsl #31
     46c8:	eaffffc9 	b	45f4 <rint+0xc0>
     46cc:	000fffff 	.word	0x000fffff
-    46d0:	00006958 	.word	0x00006958
+    46d0:	00006960 	.word	0x00006960
     46d4:	00000000 	.word	0x00000000
 
 000046d8 <scalbn>:
@@ -6609,7 +6609,7 @@ double get_sample(char playback_type){
     535c:	e59f3004 	ldr	r3, [pc, #4]	; 5368 <__errno+0xc>
     5360:	e5930000 	ldr	r0, [r3]
     5364:	e12fff1e 	bx	lr
-    5368:	00006a78 	.word	0x00006a78
+    5368:	00006e78 	.word	0x00006e78
 
 0000536c <exit>:
     536c:	e92d4008 	push	{r3, lr}
@@ -6624,7 +6624,7 @@ double get_sample(char playback_type){
     5390:	112fff13 	bxne	r3
     5394:	e1a00004 	mov	r0, r4
     5398:	eb00047f 	bl	659c <_exit>
-    539c:	00006968 	.word	0x00006968
+    539c:	00006970 	.word	0x00006970
 
 000053a0 <malloc>:
     53a0:	e92d4008 	push	{r3, lr}
@@ -6634,7 +6634,7 @@ double get_sample(char playback_type){
     53b0:	eb00000a 	bl	53e0 <_malloc_r>
     53b4:	e8bd4008 	pop	{r3, lr}
     53b8:	e12fff1e 	bx	lr
-    53bc:	00006a78 	.word	0x00006a78
+    53bc:	00006e78 	.word	0x00006e78
 
 000053c0 <free>:
     53c0:	e92d4008 	push	{r3, lr}
@@ -6644,7 +6644,7 @@ double get_sample(char playback_type){
     53d0:	eb00035c 	bl	6148 <_free_r>
     53d4:	e8bd4008 	pop	{r3, lr}
     53d8:	e12fff1e 	bx	lr
-    53dc:	00006a78 	.word	0x00006a78
+    53dc:	00006e78 	.word	0x00006e78
 
 000053e0 <_malloc_r>:
     53e0:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, r10, r11, lr}
@@ -7099,8 +7099,8 @@ double get_sample(char playback_type){
     5ae4:	e2844004 	add	r4, r4, #4
     5ae8:	1affffa0 	bne	5970 <_malloc_r+0x590>
     5aec:	eafffffa 	b	5adc <_malloc_r+0x6fc>
-    5af0:	00006ea8 	.word	0x00006ea8
-    5af4:	000072f8 	.word	0x000072f8
+    5af0:	000072a8 	.word	0x000072a8
+    5af4:	000076f8 	.word	0x000076f8
     5af8:	00000554 	.word	0x00000554
 
 00005afc <__malloc_lock>:
@@ -7125,7 +7125,7 @@ double get_sample(char playback_type){
     5b34:	e3530000 	cmp	r3, #0
     5b38:	15853000 	strne	r3, [r5]
     5b3c:	eafffff9 	b	5b28 <_sbrk_r+0x24>
-    5b40:	0000732c 	.word	0x0000732c
+    5b40:	0000772c 	.word	0x0000772c
 
 00005b44 <strcmp>:
     5b44:	e0202001 	eor	r2, r0, r1
@@ -7331,7 +7331,7 @@ double get_sample(char playback_type){
     5e54:	e58c7188 	str	r7, [r12, #392]	; 0x188
     5e58:	058c018c 	streq	r0, [r12, #396]	; 0x18c
     5e5c:	eaffffe9 	b	5e08 <__register_exitproc+0x94>
-    5e60:	00006968 	.word	0x00006968
+    5e60:	00006970 	.word	0x00006970
     5e64:	000053a0 	.word	0x000053a0
 
 00005e68 <__call_exitprocs>:
@@ -7428,7 +7428,7 @@ double get_sample(char playback_type){
     5fd0:	e1a0b006 	mov	r11, r6
     5fd4:	e1a06003 	mov	r6, r3
     5fd8:	eafffff9 	b	5fc4 <__call_exitprocs+0x15c>
-    5fdc:	00006968 	.word	0x00006968
+    5fdc:	00006970 	.word	0x00006970
     5fe0:	000053c0 	.word	0x000053c0
 
 00005fe4 <register_fini>:
@@ -7439,7 +7439,7 @@ double get_sample(char playback_type){
     5ff4:	1bfffcd0 	blne	533c <atexit>
     5ff8:	e8bd4008 	pop	{r3, lr}
     5ffc:	e12fff1e 	bx	lr
-    6000:	0000698c 	.word	0x0000698c
+    6000:	00006994 	.word	0x00006994
     6004:	00006008 	.word	0x00006008
 
 00006008 <__libc_fini_array>:
@@ -7455,11 +7455,11 @@ double get_sample(char playback_type){
     602c:	e12fff13 	bx	r3
     6030:	e2544001 	subs	r4, r4, #1
     6034:	1afffffa 	bne	6024 <__libc_fini_array+0x1c>
-    6038:	eb000253 	bl	698c <__libc_fini>
+    6038:	eb000255 	bl	6994 <__libc_fini>
     603c:	e8bd4038 	pop	{r3, r4, r5, lr}
     6040:	e12fff1e 	bx	lr
-    6044:	000069a4 	.word	0x000069a4
-    6048:	000069a8 	.word	0x000069a8
+    6044:	000069ac 	.word	0x000069ac
+    6048:	000069b0 	.word	0x000069b0
 
 0000604c <_malloc_trim_r>:
     604c:	e92d40f8 	push	{r3, r4, r5, r6, r7, lr}
@@ -7522,9 +7522,9 @@ double get_sample(char playback_type){
     6130:	e5810000 	str	r0, [r1]
     6134:	e5832004 	str	r2, [r3, #4]
     6138:	eaffffda 	b	60a8 <_malloc_trim_r+0x5c>
-    613c:	00006ea8 	.word	0x00006ea8
-    6140:	000072fc 	.word	0x000072fc
-    6144:	000072b0 	.word	0x000072b0
+    613c:	000072a8 	.word	0x000072a8
+    6140:	000076fc 	.word	0x000076fc
+    6144:	000076b0 	.word	0x000076b0
 
 00006148 <_free_r>:
     6148:	e92d40f8 	push	{r3, r4, r5, r6, r7, lr}
@@ -7677,10 +7677,10 @@ double get_sample(char playback_type){
     6394:	83a000fc 	movhi	r0, #252	; 0xfc
     6398:	83a0e07e 	movhi	lr, #126	; 0x7e
     639c:	eaffffa1 	b	6228 <_free_r+0xe0>
-    63a0:	00006ea8 	.word	0x00006ea8
-    63a4:	00006eb0 	.word	0x00006eb0
-    63a8:	000072b4 	.word	0x000072b4
-    63ac:	000072f8 	.word	0x000072f8
+    63a0:	000072a8 	.word	0x000072a8
+    63a4:	000072b0 	.word	0x000072b0
+    63a8:	000076b4 	.word	0x000076b4
+    63ac:	000076f8 	.word	0x000076f8
     63b0:	00000554 	.word	0x00000554
 
 000063b4 <cleanup_glue>:
@@ -7759,7 +7759,7 @@ double get_sample(char playback_type){
     64cc:	e1a00005 	mov	r0, r5
     64d0:	e8bd4070 	pop	{r4, r5, r6, lr}
     64d4:	eaffffb6 	b	63b4 <cleanup_glue>
-    64d8:	00006a78 	.word	0x00006a78
+    64d8:	00006e78 	.word	0x00006e78
 
 000064dc <_wrapup_reent>:
     64dc:	e92d40f8 	push	{r3, r4, r5, r6, r7, lr}
@@ -7790,7 +7790,7 @@ double get_sample(char playback_type){
     6540:	112fff13 	bxne	r3
     6544:	e8bd40f8 	pop	{r3, r4, r5, r6, r7, lr}
     6548:	e12fff1e 	bx	lr
-    654c:	00006a78 	.word	0x00006a78
+    654c:	00006e78 	.word	0x00006e78
 
 00006550 <__cs3_premain>:
     6550:	e92d4008 	push	{r3, lr}
@@ -7847,8 +7847,8 @@ double get_sample(char playback_type){
     6610:	e5803000 	str	r3, [r0]
     6614:	e3e03000 	mvn	r3, #0
     6618:	eafffff7 	b	65fc <_sbrk+0x48>
-    661c:	000072b8 	.word	0x000072b8
-    6620:	000072bc 	.word	0x000072bc
+    661c:	000076b8 	.word	0x000076b8
+    6620:	000076bc 	.word	0x000076bc
 
 00006624 <__cs3_isr_interrupt>:
     6624:	eafffffe 	b	6624 <__cs3_isr_interrupt>
@@ -7871,7 +7871,7 @@ double get_sample(char playback_type){
     6660:	e59f5040 	ldr	r5, [pc, #64]	; 66a8 <__libc_init_array+0x80>
     6664:	e59f6040 	ldr	r6, [pc, #64]	; 66ac <__libc_init_array+0x84>
     6668:	e0656006 	rsb	r6, r5, r6
-    666c:	eb0000be 	bl	696c <_init>
+    666c:	eb0000c0 	bl	6974 <_init>
     6670:	e1b06146 	asrs	r6, r6, #2
     6674:	12455004 	subne	r5, r5, #4
     6678:	13a04000 	movne	r4, #0
@@ -7884,10 +7884,10 @@ double get_sample(char playback_type){
     6694:	1afffff9 	bne	6680 <__libc_init_array+0x58>
     6698:	e8bd4070 	pop	{r4, r5, r6, lr}
     669c:	e12fff1e 	bx	lr
-    66a0:	00006984 	.word	0x00006984
-    66a4:	00006984 	.word	0x00006984
-    66a8:	00006984 	.word	0x00006984
-    66ac:	0000698c 	.word	0x0000698c
+    66a0:	0000698c 	.word	0x0000698c
+    66a4:	0000698c 	.word	0x0000698c
+    66a8:	0000698c 	.word	0x0000698c
+    66ac:	00006994 	.word	0x00006994
 
 Disassembly of section .rodata:
 
@@ -7895,119 +7895,119 @@ Disassembly of section .rodata:
     66b8:	4f5b063f 077d6d66 7c77677f 71795e39     ?.[Ofm}..gw|9^yq
 
 000066c8 <song_list>:
-    66c8:	000069cc 00000001                       .i......
+    66c8:	000069d4 00000001 000069e0 00000001     .i.......i......
 
-000066d0 <min_volume>:
-    66d0:	00000001                                ....
+000066d8 <min_volume>:
+    66d8:	00000001                                ....
 
-000066d4 <max_volume>:
-    66d4:	00000014                                ....
+000066dc <max_volume>:
+    66dc:	00000014                                ....
 
-000066d8 <error_code>:
-    66d8:	00000040 00000041 00007343 00000045     @...A...Cs..E...
-    66e8:	00000053 00000042 00007344 00007346     S...B...Ds..Fs..
+000066e0 <error_code>:
+    66e0:	00000040 00000041 00007343 00000045     @...A...Cs..E...
+    66f0:	00000053 00000042 00007344 00007346     S...B...Ds..Fs..
+    6700:	00000047 00000043 00000044 00000046     G...C...D...F...
 
-000066f8 <default_amplitude>:
-    66f8:	d2d0e560 4150624d                       `...MbPA
+00006710 <default_amplitude>:
+    6710:	d2d0e560 4150624d                       `...MbPA
 
-00006700 <sampling_period>:
-    6700:	d2f1a9fc 3f20624d                       ....Mb ?
+00006718 <sampling_period>:
+    6718:	d2f1a9fc 3f20624d                       ....Mb ?
 
-00006708 <sampling_frequency>:
-    6708:	00001f40 00000000                       @.......
+00006720 <sampling_frequency>:
+    6720:	00001f40 00000000                       @.......
 
-00006710 <pi>:
-    6710:	54442d18 400921fb 00000043 00006244     .-DT.!.@C...Db..
-    6720:	00000044 00006245 00000046 00006247     D...Eb..F...Gb..
-    6730:	00000047 00007347 00006241 00007341     G...Gs..Ab..As..
-    6740:	00006242 00776f70                       Bb..pow.
+00006728 <pi>:
+    6728:	54442d18 400921fb 00006244 00006245     .-DT.!.@Db..Eb..
+    6738:	00006247 00007347 00006241 00007341     Gb..Gs..Ab..As..
+    6748:	00006242 00776f70                       Bb..pow.
 
-00006748 <bp>:
-    6748:	00000000 3ff00000 00000000 3ff80000     .......?.......?
+00006750 <bp>:
+    6750:	00000000 3ff00000 00000000 3ff80000     .......?.......?
 
-00006758 <dp_l>:
+00006760 <dp_l>:
 	...
-    6760:	43cfd006 3e4cfdeb                       ...C..L>
+    6768:	43cfd006 3e4cfdeb                       ...C..L>
 
-00006768 <dp_h>:
+00006770 <dp_h>:
 	...
-    6770:	40000000 3fe2b803 00000000              ...@...?....
+    6778:	40000000 3fe2b803 00000000              ...@...?....
 
-0000677c <npio2_hw>:
-    677c:	3ff921fb 400921fb 4012d97c 401921fb     .!.?.!.@|..@.!.@
-    678c:	401f6a7a 4022d97c 4025fdbb 402921fb     zj.@|."@..%@.!)@
-    679c:	402c463a 402f6a7a 4031475c 4032d97c     :F,@zj/@\G1@|.2@
-    67ac:	40346b9c 4035fdbb 40378fdb 403921fb     .k4@..5@..7@.!9@
-    67bc:	403ab41b 403c463a 403dd85a 403f6a7a     ..:@:F<@Z.=@zj?@
-    67cc:	40407e4c 4041475c 4042106c 4042d97c     L~@@\GA@l.B@|.B@
-    67dc:	4043a28c 40446b9c 404534ac 4045fdbb     ..C@.kD@.4E@..E@
-    67ec:	4046c6cb 40478fdb 404858eb 404921fb     ..F@..G@.XH@.!I@
+00006784 <npio2_hw>:
+    6784:	3ff921fb 400921fb 4012d97c 401921fb     .!.?.!.@|..@.!.@
+    6794:	401f6a7a 4022d97c 4025fdbb 402921fb     zj.@|."@..%@.!)@
+    67a4:	402c463a 402f6a7a 4031475c 4032d97c     :F,@zj/@\G1@|.2@
+    67b4:	40346b9c 4035fdbb 40378fdb 403921fb     .k4@..5@..7@.!9@
+    67c4:	403ab41b 403c463a 403dd85a 403f6a7a     ..:@:F<@Z.=@zj?@
+    67d4:	40407e4c 4041475c 4042106c 4042d97c     L~@@\GA@l.B@|.B@
+    67e4:	4043a28c 40446b9c 404534ac 4045fdbb     ..C@.kD@.4E@..E@
+    67f4:	4046c6cb 40478fdb 404858eb 404921fb     ..F@..G@.XH@.!I@
 
-000067fc <two_over_pi>:
-    67fc:	00a2f983 006e4e44 001529fc 002757d1     ....DNn..)...W'.
-    680c:	00f534dd 00c0db62 0095993c 00439041     .4..b...<...A.C.
-    681c:	00fe5163 00abdebb 00c561b7 00246e3a     cQ.......a..:n$.
-    682c:	00424dd2 00e00649 002eea09 00d1921c     .MB.I...........
-    683c:	00fe1deb 001cb129 00a73ee8 008235f5     ....)....>...5..
-    684c:	002ebb44 0084e99c 007026b4 005f7e41     D........&p.A~_.
-    685c:	003991d6 00398353 0039f49c 00845f8b     ..9.S.9...9.._..
-    686c:	00bdf928 003b1ff8 0097ffde 0005980f     (.....;.........
-    687c:	00ef2f11 008b5a0a 006d1f6d 00367ecf     ./...Z..m.m..~6.
-    688c:	0027cb09 00b74f46 003f669e 005fea2d     ..'.FO...f?.-._.
-    689c:	007527ba 00c7ebe5 00f17b3d 000739f7     .'u.....={...9..
-    68ac:	008a5292 00ea6bfb 005fb11f 008d5d08     .R...k...._..]..
-    68bc:	00560330 0046fc7b 006babf0 00cfbc20     0.V.{.F...k. ...
-    68cc:	009af436 001da9e3 0091615e 00e61b08     6.......^a......
-    68dc:	00659985 005f14a0 0068408d 00ffd880     ..e..._..@h.....
-    68ec:	004d7327 00310606 001556ca 0073a8c9     'sM...1..V....s.
-    68fc:	0060e27b 00c08c6b 00000000              {.`.k.......
+00006804 <two_over_pi>:
+    6804:	00a2f983 006e4e44 001529fc 002757d1     ....DNn..)...W'.
+    6814:	00f534dd 00c0db62 0095993c 00439041     .4..b...<...A.C.
+    6824:	00fe5163 00abdebb 00c561b7 00246e3a     cQ.......a..:n$.
+    6834:	00424dd2 00e00649 002eea09 00d1921c     .MB.I...........
+    6844:	00fe1deb 001cb129 00a73ee8 008235f5     ....)....>...5..
+    6854:	002ebb44 0084e99c 007026b4 005f7e41     D........&p.A~_.
+    6864:	003991d6 00398353 0039f49c 00845f8b     ..9.S.9...9.._..
+    6874:	00bdf928 003b1ff8 0097ffde 0005980f     (.....;.........
+    6884:	00ef2f11 008b5a0a 006d1f6d 00367ecf     ./...Z..m.m..~6.
+    6894:	0027cb09 00b74f46 003f669e 005fea2d     ..'.FO...f?.-._.
+    68a4:	007527ba 00c7ebe5 00f17b3d 000739f7     .'u.....={...9..
+    68b4:	008a5292 00ea6bfb 005fb11f 008d5d08     .R...k...._..]..
+    68c4:	00560330 0046fc7b 006babf0 00cfbc20     0.V.{.F...k. ...
+    68d4:	009af436 001da9e3 0091615e 00e61b08     6.......^a......
+    68e4:	00659985 005f14a0 0068408d 00ffd880     ..e..._..@h.....
+    68f4:	004d7327 00310606 001556ca 0073a8c9     'sM...1..V....s.
+    6904:	0060e27b 00c08c6b 00000000              {.`.k.......
 
-00006908 <init_jk>:
-    6908:	00000002 00000003 00000004 00000006     ................
+00006910 <init_jk>:
+    6910:	00000002 00000003 00000004 00000006     ................
 
-00006918 <PIo2>:
-    6918:	40000000 3ff921fb 00000000 3e74442d     ...@.!.?....-Dt>
-    6928:	80000000 3cf84698 60000000 3b78cc51     .....F.<...`Q.x;
-    6938:	80000000 39f01b83 40000000 387a2520     .......9...@ %z8
-    6948:	80000000 36e38222 00000000 3569f31d     ...."..6......i5
+00006920 <PIo2>:
+    6920:	40000000 3ff921fb 00000000 3e74442d     ...@.!.?....-Dt>
+    6930:	80000000 3cf84698 60000000 3b78cc51     .....F.<...`Q.x;
+    6940:	80000000 39f01b83 40000000 387a2520     .......9...@ %z8
+    6950:	80000000 36e38222 00000000 3569f31d     ...."..6......i5
 
-00006958 <TWO52>:
-    6958:	00000000 43300000 00000000 c3300000     ......0C......0.
+00006960 <TWO52>:
+    6960:	00000000 43300000 00000000 c3300000     ......0C......0.
 
-00006968 <_global_impure_ptr>:
-    6968:	00006a80                                .j..
+00006970 <_global_impure_ptr>:
+    6970:	00006e80                                .n..
 
-0000696c <_init>:
-    696c:	e1a0c00d 	mov	r12, sp
-    6970:	e92ddff8 	push	{r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr, pc}
-    6974:	e24cb004 	sub	r11, r12, #4
-    6978:	e24bd028 	sub	sp, r11, #40	; 0x28
-    697c:	e89d6ff0 	ldm	sp, {r4, r5, r6, r7, r8, r9, r10, r11, sp, lr}
-    6980:	e12fff1e 	bx	lr
+00006974 <_init>:
+    6974:	e1a0c00d 	mov	r12, sp
+    6978:	e92ddff8 	push	{r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr, pc}
+    697c:	e24cb004 	sub	r11, r12, #4
+    6980:	e24bd028 	sub	sp, r11, #40	; 0x28
+    6984:	e89d6ff0 	ldm	sp, {r4, r5, r6, r7, r8, r9, r10, r11, sp, lr}
+    6988:	e12fff1e 	bx	lr
 
-00006984 <__init_array_start>:
-    6984:	00005fe4 	.word	0x00005fe4
+0000698c <__init_array_start>:
+    698c:	00005fe4 	.word	0x00005fe4
 
-00006988 <__frame_dummy_init_array_entry>:
-    6988:	00000208                                ....
+00006990 <__frame_dummy_init_array_entry>:
+    6990:	00000208                                ....
 
-0000698c <__libc_fini>:
-    698c:	e1a0c00d 	mov	r12, sp
-    6990:	e92ddff8 	push	{r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr, pc}
-    6994:	e24cb004 	sub	r11, r12, #4
-    6998:	e24bd028 	sub	sp, r11, #40	; 0x28
-    699c:	e89d6ff0 	ldm	sp, {r4, r5, r6, r7, r8, r9, r10, r11, sp, lr}
-    69a0:	e12fff1e 	bx	lr
+00006994 <__libc_fini>:
+    6994:	e1a0c00d 	mov	r12, sp
+    6998:	e92ddff8 	push	{r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr, pc}
+    699c:	e24cb004 	sub	r11, r12, #4
+    69a0:	e24bd028 	sub	sp, r11, #40	; 0x28
+    69a4:	e89d6ff0 	ldm	sp, {r4, r5, r6, r7, r8, r9, r10, r11, sp, lr}
+    69a8:	e12fff1e 	bx	lr
 
-000069a4 <__fini_array_start>:
-    69a4:	000001c4 	.word	0x000001c4
+000069ac <__fini_array_start>:
+    69ac:	000001c4 	.word	0x000001c4
 
-000069a8 <__cs3_regions>:
-    69a8:	00000000 	.word	0x00000000
-    69ac:	00000040 	.word	0x00000040
-    69b0:	00000040 	.word	0x00000040
-    69b4:	00007280 	.word	0x00007280
-    69b8:	00000070 	.word	0x00000070
+000069b0 <__cs3_regions>:
+    69b0:	00000000 	.word	0x00000000
+    69b4:	00000040 	.word	0x00000040
+    69b8:	00000040 	.word	0x00000040
+    69bc:	00007680 	.word	0x00007680
+    69c0:	00000070 	.word	0x00000070
 
-000069bc <__cs3_regions_end>:
-    69bc:	00000000 	.word	0x00000000
+000069c4 <__cs3_regions_end>:
+    69c4:	00000000 	.word	0x00000000
