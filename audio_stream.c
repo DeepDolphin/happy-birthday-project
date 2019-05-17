@@ -29,39 +29,39 @@ void initialize_stream(){
 	}
 }
 
-//processes one chord of each track
+//processes one chord of the shortest duration track
 void populate_stream(){
-	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
-		//retrieve the current track
-		struct MusicTrack current_track = audio_stream.current_song.music_tracks[i];
-		
-		//check to make sure there is more song left for the respective track
-		if(audio_stream.current_process_locations[i] >= current_track.length) continue;
-		
-		//retrieve the current chord
-		struct MusicChord current_chord = current_track.music_chords[audio_stream.current_process_locations[i]];
-		
-		//add a new node to the back of the respective queue
-		struct MusicWaveNode * node = malloc(sizeof(struct MusicWaveNode));
-		
-		node->wave = get_chord_wave(current_chord);
-		node->next = NULL;
-		
-		//append the node to the back of the queue
-		if(audio_stream.queue_backs[i] != NULL)
-			audio_stream.queue_backs[i]->next = node;
-		
-		audio_stream.queue_backs[i] = node;
-		
-		//if the front of the list is null, the added node is also the front of the list
-		if(audio_stream.queue_fronts[i] == NULL) audio_stream.queue_fronts[i] = node;
-		
-		//increment the location to be the next chord to be processed
-		audio_stream.current_process_locations[i]++;
-		
-		//increase the duration of the audio stream by the duration of the chord just processed
-		audio_stream.durations[i] += current_chord.duration;
-	}
+	unsigned int i = get_next_processed_track();
+	
+	//retrieve the current track
+	struct MusicTrack current_track = audio_stream.current_song.music_tracks[i];
+	
+	//check to make sure there is more song left for the respective track
+	if(audio_stream.current_process_locations[i] >= current_track.length) return;
+	
+	//retrieve the current chord
+	struct MusicChord current_chord = current_track.music_chords[audio_stream.current_process_locations[i]];
+	
+	//add a new node to the back of the respective queue
+	struct MusicWaveNode * node = malloc(sizeof(struct MusicWaveNode));
+	
+	node->wave = get_chord_wave(current_chord);
+	node->next = NULL;
+	
+	//append the node to the back of the queue
+	if(audio_stream.queue_backs[i] != NULL)
+		audio_stream.queue_backs[i]->next = node;
+	
+	audio_stream.queue_backs[i] = node;
+	
+	//if the front of the list is null, the added node is also the front of the list
+	if(audio_stream.queue_fronts[i] == NULL) audio_stream.queue_fronts[i] = node;
+	
+	//increment the location to be the next chord to be processed
+	audio_stream.current_process_locations[i]++;
+	
+	//increase the duration of the audio stream by the duration of the chord just processed
+	audio_stream.durations[i] += current_chord.duration;
 }
 
 //clears the stream but keeps the current song the same
@@ -97,6 +97,29 @@ bool is_stream_valid(){
 	}
 	
 	return true;
+}
+
+//finds the next valid track with least processed time
+unsigned int get_next_processed_track(){
+	unsigned int shortest_duration_index = 0;
+	for(unsigned int i = 1; i < audio_stream.current_song.num_tracks; i++){
+		if(audio_stream.current_process_locations[i] < audio_stream.current_song.music_tracks[i].length 
+			&& audio_stream.durations[i] < audio_stream.durations[shortest_duration_index]){
+			shortest_duration_index = i;
+		}
+	}
+	return shortest_duration_index;
+}
+
+//finds the track with the most processed time and returns the duration of it
+double get_time_left(){
+	unsigned int longest_duration_index = 0;
+	for(unsigned int i = 1; i < audio_stream.current_song.num_tracks; i++){
+		if(audio_stream.durations[i] > audio_stream.durations[longest_duration_index]){
+			longest_duration_index = i;
+		}
+	}
+	return audio_stream.durations[longest_duration_index];
 }
 
 //retrieve the current sample for all tracks of the provided playback type

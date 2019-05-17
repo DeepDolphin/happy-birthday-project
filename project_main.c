@@ -85,8 +85,9 @@ void display_status(){
 	to_display_on_hex3_hex0 = num_to_seg7_dec(volume);
 	
 	//display the current length on the hexes as well
-	//to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_hex(audio_stream.) << 16);
-	//to_display_on_hex5_hex4 = num_to_seg7_hex(audio_stream.length_L);
+	double time_left = get_time_left();
+	to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_dec(((int) (time_left * 100)) % 100) << 16);
+	to_display_on_hex5_hex4 = num_to_seg7_dec(((int) time_left) % 100);
 	
 	//display on hex and ledr
 	*ledr_base = to_display_on_ledr;

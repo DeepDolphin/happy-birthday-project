@@ -35,6 +35,8 @@ void populate_stream();
 void clear_stream();
 void initialize_stream();
 bool is_stream_valid();
+unsigned int get_next_processed_track();
+double get_time_left();
 double get_sample(char playback_type);
 
 #endif
