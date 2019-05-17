@@ -25,10 +25,9 @@ int main(){
 	config_audio();
 	config_keys();
 					
-	//set the current song to the test song
+	//initialize the audio stream
 	audio_stream.current_song = test_song;
-	audio_stream.current_location_L = 0;
-	audio_stream.current_location_R = 0;
+	initialize_stream();
 	
 	//enable interrupts once all setup is finished
 	enable_A9_interrupts();
@@ -71,7 +70,7 @@ void display_status(){
 	int to_display_on_ledr = 0;
 	
 	//display if the audio_stream has been fully populated
-	if (audio_stream.current_song_location == audio_stream.current_song.length) 
+	if (audio_stream.current_process_locations[0] == audio_stream.current_song.music_tracks[0].length) 
 		to_display_on_ledr = 0b1;
 	
 	//display if the audio_stream is currently valid
@@ -86,8 +85,8 @@ void display_status(){
 	to_display_on_hex3_hex0 = num_to_seg7_dec(volume);
 	
 	//display the current length on the hexes as well
-	to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_hex(audio_stream.length_R) << 16);
-	to_display_on_hex5_hex4 = num_to_seg7_hex(audio_stream.length_L);
+	//to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_hex(audio_stream.) << 16);
+	//to_display_on_hex5_hex4 = num_to_seg7_hex(audio_stream.length_L);
 	
 	//display on hex and ledr
 	*ledr_base = to_display_on_ledr;
@@ -177,7 +176,7 @@ void keys_ISR(){
 
 void audio_ISR(){
 	//catch if there is nothing to write to the audio queue
-	if(audio_stream.list_front_R == NULL || audio_stream.list_front_L == NULL) while (1);
+	if(!is_stream_valid()) while (1);
 	
 	volatile int * audio_base = (int *) AUDIO_BASE;
 	volatile int * audio_right = audio_base + 3;
@@ -185,35 +184,31 @@ void audio_ISR(){
 	
 	unsigned int fifo_space = *(audio_base + 1);
 		
-	//check the right write availability
+	//check the right and left write availability
 	unsigned int num_samples_right = (unsigned int) ((fifo_space >> 16) & 0xFF);
-	while(num_samples_right > 0){
-		//retrieve and write a sample to the right
-		*audio_right = (int) (volume * get_sample_R());
-		
-		//decrement the number of samples required
-		num_samples_right--;
-		
-		//check if the audio stream is still valid
-		if(!is_stream_valid()){
-			stop_audio_playback(&num_samples_right, audio_right);
-			status_flags.clear_queue = true;
-			break;
-		}
-	}
-	
-	//check the left write availability
 	unsigned int num_samples_left = (unsigned int) ((fifo_space >> 24) & 0xFF);
-	while(num_samples_left > 0){
-		//retrieve and write a sample to the left
-		*audio_left = (int) (volume * get_sample_L());
+	while(num_samples_right > 0 || num_samples_left > 0){
+		double sample_mono = get_sample(PLAYBACK_MONO);
 		
-		//decrement the number of samples required
-		num_samples_left--;
+		if(num_samples_right > 0){
+			//retrieve and write a sample to the right
+			*audio_right = (int) (volume * (get_sample(PLAYBACK_STEREO_R) + sample_mono));
+			
+			//decrement the number of samples required
+			num_samples_right--;
+		}
+		
+		if(num_samples_left > 0){
+			//retrieve and write a sample to the left
+			*audio_left = (int) (volume * (get_sample(PLAYBACK_STEREO_L) + sample_mono));
+			
+			//decrement the number of samples required
+			num_samples_left--;
+		}
 		
 		//check if the audio stream is still valid
 		if(!is_stream_valid()){
-			stop_audio_playback(&num_samples_left, audio_left);
+			stop_all_audio_playback();
 			status_flags.clear_queue = true;
 			break;
 		}

@@ -8,14 +8,23 @@ struct MusicNote {
 
 struct MusicChord {
 	struct MusicNote * music_notes;
-	double duration;
+	double duration; //in seconds
 	double intensity;
 	unsigned int num_notes;
 };
 
-struct MusicSong {
+#define PLAYBACK_MONO 0
+#define PLAYBACK_STEREO_R 1
+#define PLAYBACK_STEREO_L 2
+struct MusicTrack {
 	struct MusicChord * music_chords;
+	char playback_type;
 	unsigned int length;
+};
+
+struct MusicSong {
+	struct MusicTrack * music_tracks;
+	unsigned int num_tracks;
 };
 
 struct MusicWave {

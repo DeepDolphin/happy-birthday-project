@@ -11,24 +11,20 @@ struct MusicWaveNode{
 };
 
 struct AudioStream {
-	//current location within the top music wave
-	unsigned int current_location_R;
-	unsigned int current_location_L;
+	//current locations within the top music wave of each track
+	unsigned int * current_playback_locations;
 	
-	//top of the music wave queue	
-	struct MusicWaveNode * list_front_R;
-	struct MusicWaveNode * list_front_L;
+	//current locations within the song tracks
+	unsigned int * current_process_locations;
 	
-	//bottom of the music wave queue
-	struct MusicWaveNode * list_back_R;
-	struct MusicWaveNode * list_back_L;
+	//top of the music wave queue of each track
+	struct MusicWaveNode ** queue_fronts;
 	
-	//current location within the song (of the bottom of the queue)
-	unsigned int current_song_location;
+	//bottom of the music wave queue of each track
+	struct MusicWaveNode ** queue_backs;
 	
-	//length of the queue
-	unsigned int length_R;
-	unsigned int length_L;
+	//current duration of the processed tracks
+	double * durations;
 	
 	//current song being played
 	struct MusicSong current_song;
@@ -37,8 +33,8 @@ struct AudioStream {
 void advance_stream(struct MusicWaveNode ** front_node);
 void populate_stream();
 void clear_stream();
+void initialize_stream();
 bool is_stream_valid();
-double get_sample_R();
-double get_sample_L();
+double get_sample(char playback_type);
 
 #endif

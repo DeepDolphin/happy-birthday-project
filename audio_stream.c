@@ -4,61 +4,79 @@
 #include "audio_stream.h"
 
 struct AudioStream audio_stream;
+extern const double sampling_period;
 
-void populate_stream(){
-	//check to make sure there is more song left
-	if(audio_stream.current_song_location >= audio_stream.current_song.length) return;
+//initializes the stream assuming the current song is correct
+void initialize_stream(){
+	//allocate memory for the stream
+	audio_stream.current_playback_locations = malloc(sizeof(unsigned int) * audio_stream.current_song.num_tracks);
+	audio_stream.current_process_locations = malloc(sizeof(unsigned int) * audio_stream.current_song.num_tracks);
 	
-	//add a new node to the back of each queue
-	struct MusicWaveNode * node_R = malloc(sizeof(struct MusicWaveNode));
-	struct MusicWaveNode * node_L = malloc(sizeof(struct MusicWaveNode));
+	audio_stream.queue_fronts = malloc(sizeof(struct MusicWaveNode *) * audio_stream.current_song.num_tracks);
+	audio_stream.queue_backs = malloc(sizeof(struct MusicWaveNode *) * audio_stream.current_song.num_tracks);
 	
-	node_R->wave = get_chord_wave(audio_stream.current_song.music_chords[audio_stream.current_song_location]);
-	node_L->wave = copy_wave(node_R->wave);
+	audio_stream.durations = malloc(sizeof(double) * audio_stream.current_song.num_tracks);
 	
-	node_R->next = NULL;
-	node_L->next = NULL;
-	
-	//append the node to the back of the queue
-	if(audio_stream.list_back_R != NULL)
-		audio_stream.list_back_R->next = node_R;
-	if(audio_stream.list_back_L != NULL)
-		audio_stream.list_back_L->next = node_L;
-	
-	audio_stream.list_back_R = node_R;
-	audio_stream.list_back_L = node_L;
-	
-	//if the front of the list is null, the added node is also the front of the list
-	if(audio_stream.list_front_R == NULL) audio_stream.list_front_R = audio_stream.list_back_R;
-	if(audio_stream.list_front_L == NULL) audio_stream.list_front_L = audio_stream.list_back_L;
-	
-	//increment the location to be the next note to be processed
-	audio_stream.current_song_location++;
-	
-	//increase the length of the audioaudio_stream
-	audio_stream.length_R++;
-	audio_stream.length_L++;
+	//initialize all variables
+	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+		audio_stream.current_playback_locations[i] = 0;
+		audio_stream.current_process_locations[i] = 0;
+		
+		audio_stream.queue_fronts[i] = NULL;
+		audio_stream.queue_backs[i] = NULL;
+		
+		audio_stream.durations[i] = 0;
+	}
 }
 
+//processes one chord of each track
+void populate_stream(){
+	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+		//retrieve the current track
+		struct MusicTrack current_track = audio_stream.current_song.music_tracks[i];
+		
+		//check to make sure there is more song left for the respective track
+		if(audio_stream.current_process_locations[i] >= current_track.length) continue;
+		
+		//retrieve the current chord
+		struct MusicChord current_chord = current_track.music_chords[audio_stream.current_process_locations[i]];
+		
+		//add a new node to the back of the respective queue
+		struct MusicWaveNode * node = malloc(sizeof(struct MusicWaveNode));
+		
+		node->wave = get_chord_wave(current_chord);
+		node->next = NULL;
+		
+		//append the node to the back of the queue
+		if(audio_stream.queue_backs[i] != NULL)
+			audio_stream.queue_backs[i]->next = node;
+		
+		audio_stream.queue_backs[i] = node;
+		
+		//if the front of the list is null, the added node is also the front of the list
+		if(audio_stream.queue_fronts[i] == NULL) audio_stream.queue_fronts[i] = node;
+		
+		//increment the location to be the next chord to be processed
+		audio_stream.current_process_locations[i]++;
+		
+		//increase the duration of the audio stream by the duration of the chord just processed
+		audio_stream.durations[i] += current_chord.duration;
+	}
+}
+
+//clears the stream but keeps the current song the same
 void clear_stream(){
-	//clear the right side
-	while(audio_stream.list_front_R != NULL)
-		advance_stream(&audio_stream.list_front_R);
-	
-	audio_stream.list_back_R = NULL;
-	audio_stream.current_location_R = 0;
-	audio_stream.length_R = 0;
-	
-	//clear the left side
-	while(audio_stream.list_front_L != NULL)
-		advance_stream(&audio_stream.list_front_L);
-	
-	audio_stream.list_back_L = NULL;
-	audio_stream.current_location_L = 0;
-	audio_stream.length_L = 0;
-	
-	//reset song location so processing can begin again
-	audio_stream.current_song_location = 0;
+	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+		//advance the stream to the end
+		while(audio_stream.queue_fronts[i] != NULL)
+			advance_stream(&audio_stream.queue_fronts[i]);
+		
+		//set all other variables pertaining to the respective track to zero
+		audio_stream.queue_backs[i] = NULL;
+		audio_stream.current_playback_locations[i] = 0;
+		audio_stream.current_process_locations[i] = 0;
+		audio_stream.durations[i] = 0;
+	}
 }
 
 void advance_stream(struct MusicWaveNode ** front_node){
@@ -74,39 +92,38 @@ void advance_stream(struct MusicWaveNode ** front_node){
 }
 
 bool is_stream_valid(){
-	return audio_stream.list_front_R != NULL && audio_stream.list_front_L != NULL;
+	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+		if(audio_stream.queue_fronts[i] == NULL) return false;
+	}
+	
+	return true;
 }
 
-double get_sample_R(){
+//retrieve the current sample for all tracks of the provided playback type
+double get_sample(char playback_type){
 	//store the sample to be returned
-	double to_return = audio_stream.list_front_R->wave.waveform[audio_stream.current_location_R];
+	double to_return = 0;
 	
-	//increment the next sample location
-	audio_stream.current_location_R++;
-	
-	//if the current wave has reached the end, advance and reset location/length
-	if(audio_stream.current_location_R == audio_stream.list_front_R->wave.length){
-		advance_stream(&audio_stream.list_front_R);
-		audio_stream.current_location_R = 0;
-		audio_stream.length_R--;
+	//check each track to see if it is to be placed on the right
+	for(unsigned int i = 0; i < audio_stream.current_song.num_tracks; i++){
+		struct MusicTrack current_track = audio_stream.current_song.music_tracks[i];
+		
+		if(current_track.playback_type == playback_type){
+			to_return += audio_stream.queue_fronts[i]->wave.waveform[audio_stream.current_playback_locations[i]];
+			
+			//increment the next sample location
+			audio_stream.current_playback_locations[i]++;
+			
+			//decrement the duration of the track played
+			audio_stream.durations[i] -= sampling_period;
+			
+			//if the current wave has reached the end, advance and reset location
+			if(audio_stream.current_playback_locations[i] == audio_stream.queue_fronts[i]->wave.length){
+				advance_stream(&audio_stream.queue_fronts[i]);
+				audio_stream.current_playback_locations[i] = 0;
+			}
+		}
 	}
 	
 	return to_return;	
-}
-
-double get_sample_L(){
-	//store the sample to be returned
-	double to_return = audio_stream.list_front_L->wave.waveform[audio_stream.current_location_L];
-	
-	//increment the next sample location
-	audio_stream.current_location_L++;
-	
-	//if the current wave has reached the end, advance and reset location/length
-	if(audio_stream.current_location_L == audio_stream.list_front_L->wave.length){
-		advance_stream(&audio_stream.list_front_L);
-		audio_stream.current_location_L = 0;
-		audio_stream.length_L--;
-	}
-	
-	return to_return;
 }
