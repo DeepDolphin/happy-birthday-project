@@ -13,8 +13,8 @@
 
 extern struct AudioStream audio_stream;
 struct StatusFlags status_flags = {.clear_queue = false, .change_song = false, .is_playing = false};
-unsigned int volume = 10;
-const unsigned int max_volume = 20, min_volume = 1;
+const unsigned int max_volume = 10, min_volume = 0, default_volume = 5, volume_step = 2;
+unsigned int volume = default_volume;
 
 int main(){
 	volatile int * sw_base = (int*) SW_BASE;
@@ -202,7 +202,7 @@ void audio_ISR(){
 		
 		if(num_samples_right > 0){
 			//retrieve and write a sample to the right
-			*audio_right = (int) (volume * (get_sample(PLAYBACK_STEREO_R) + sample_mono));
+			*audio_right = (int) (volume_step * (volume - default_volume) * (get_sample(PLAYBACK_STEREO_R) + sample_mono));
 			
 			//decrement the number of samples required
 			num_samples_right--;
@@ -210,7 +210,7 @@ void audio_ISR(){
 		
 		if(num_samples_left > 0){
 			//retrieve and write a sample to the left
-			*audio_left = (int) (volume * (get_sample(PLAYBACK_STEREO_L) + sample_mono));
+			*audio_left = (int) (volume_step * (volume - default_volume) * (get_sample(PLAYBACK_STEREO_L) + sample_mono));
 			
 			//decrement the number of samples required
 			num_samples_left--;
