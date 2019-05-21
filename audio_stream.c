@@ -103,15 +103,19 @@ void advance_stream(struct MusicWaveNode ** front_node){
 
 bool is_stream_valid(){
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
-		if(audio_stream.queue_fronts[i] == NULL) return false;
+		if(audio_stream.queue_fronts[i] == NULL && !is_track_fully_processed(i)) return false;
 	}
 	
 	return true;
 }
 
+bool is_track_fully_processed(unsigned int track_num){
+	return audio_stream.current_process_locations[track_num] >= audio_stream.current_song->music_tracks[track_num].length;
+}
+
 bool is_stream_fully_processed(){
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
-		if(audio_stream.current_process_locations[i] < audio_stream.current_song->music_tracks[i].length)
+		if(!is_track_fully_processed(i))
 			return false;
 	}
 	
@@ -122,23 +126,29 @@ bool is_stream_fully_processed(){
 unsigned int get_next_processed_track(){
 	unsigned int shortest_duration_index = 0;
 	for(unsigned int i = 1; i < audio_stream.current_song->num_tracks; i++){
-		if(audio_stream.current_process_locations[i] < audio_stream.current_song->music_tracks[i].length 
-			&& audio_stream.durations[i] < audio_stream.durations[shortest_duration_index]){
+		if(!is_track_fully_processed(i)
+			&& (audio_stream.durations[i] < audio_stream.durations[shortest_duration_index] || is_track_fully_processed(shortest_duration_index))){
 			shortest_duration_index = i;
 		}
 	}
+	
 	return shortest_duration_index;
 }
 
-//finds the track with the most processed time and returns the duration of it
+//finds the track with the least processed time if still processing or most processed time if finished processing and returns the duration of it
 double get_time_left(){
-	unsigned int longest_duration_index = 0;
-	for(unsigned int i = 1; i < audio_stream.current_song->num_tracks; i++){
-		if(audio_stream.durations[i] > audio_stream.durations[longest_duration_index]){
-			longest_duration_index = i;
+	unsigned int track_index = 0;
+	if(is_stream_fully_processed()){
+		for(unsigned int i = 1; i < audio_stream.current_song->num_tracks; i++){
+			if(audio_stream.durations[i] > audio_stream.durations[track_index]){
+				track_index = i;
+			}
 		}
+	} else {
+		track_index = get_next_processed_track();
 	}
-	return audio_stream.durations[longest_duration_index];
+	
+	return audio_stream.durations[track_index];
 }
 
 //retrieve the current sample for all tracks of the provided playback type
@@ -146,11 +156,11 @@ double get_sample(char playback_type){
 	//store the sample to be returned
 	double to_return = 0;
 	
-	//check each track to see if it is to be placed on the right
+	//check each track to see if it is to be placed on the playback type requested
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
 		struct MusicTrack current_track = audio_stream.current_song->music_tracks[i];
 		
-		if(current_track.playback_type == playback_type){
+		if(current_track.playback_type == playback_type && audio_stream.queue_fronts[i] != NULL){
 			to_return += audio_stream.queue_fronts[i]->wave.waveform[audio_stream.current_playback_locations[i]];
 			
 			//increment the next sample location

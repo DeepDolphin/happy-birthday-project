@@ -37,6 +37,7 @@ void initialize_stream();
 void deconstruct_stream();
 bool is_stream_valid();
 bool is_stream_fully_processed();
+bool is_track_fully_processed(unsigned int track_num);
 unsigned int get_next_processed_track();
 double get_time_left();
 double get_sample(char playback_type);

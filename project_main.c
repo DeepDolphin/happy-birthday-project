@@ -52,16 +52,19 @@ int main(){
 		if(status_flags.change_song){
 			//use the first four switches to pick song
 			unsigned int song_offset = (*sw_base) & 0xF;
-		
-			//deconstructs the current stream
-			deconstruct_stream();
 			
-			//changes the song based on switches
-			audio_stream.current_song = song_list + song_offset;
-		
-			//re-initializes the stream
-			initialize_stream();
-		
+			//check that the song offset is valid
+			if(song_offset < NUM_SONGS){
+				//deconstructs the current stream
+				deconstruct_stream();
+				
+				//changes the song based on switches
+				audio_stream.current_song = song_list + song_offset;
+			
+				//re-initializes the stream
+				initialize_stream();
+			}
+			
 			//reset the flag so that changing the song does not happen again
 			status_flags.change_song = false;
 		}
@@ -108,8 +111,14 @@ void display_status(){
 	
 	//display the current length on the hexes as well
 	double time_left = get_time_left();
-	to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_dec(((int) (time_left * 100)) % 100) << 16);
-	to_display_on_hex5_hex4 = num_to_seg7_dec(((int) time_left) % 100);
+	//decide to display the deciseconds or not
+	if(time_left > 100){
+		to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_dec(((int) time_left) % 100) << 16);
+		to_display_on_hex5_hex4 = num_to_seg7_dec(((int) time_left) / 100);
+	} else { //display the deciseconds
+		to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_dec(((int) (time_left * 100)) % 100) << 16);
+		to_display_on_hex5_hex4 = num_to_seg7_dec(((int) time_left) % 100);
+	}
 	
 	//display on hex and ledr
 	*ledr_base = to_display_on_ledr;
@@ -247,7 +256,7 @@ void audio_ISR(){
 		//check if the audio stream is still valid
 		if(!is_stream_valid()){
 			stop_all_audio_playback();
-			status_flags.clear_queue = true;
+			if(is_stream_fully_processed()) status_flags.clear_queue = true;
 			break;
 		}
 	}
