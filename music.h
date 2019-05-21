@@ -1,6 +1,8 @@
 #ifndef music
 #define music
 
+#define MAX_FREQUENCY 3750
+
 struct MusicNote {
 	char * note;
 	int octave;

@@ -6,11 +6,17 @@
 
 #include "music.h"
 #include "address_map_arm.h"
+#include "project_main.h"
 
 const double pi = 3.14159265358979323846;
 const int sampling_frequency = 8000;
 const double sampling_period = 0.000125;
 const double default_amplitude = INT_MAX / 500;
+
+const double num_harmonics = 3;
+const double harmonic_intensities[] = {1, 0.5, 0.25};
+
+extern struct StatusFlags status_flags;
 
 //returns the frequency requested of the key number given
 double get_frequency(char * note, int octave){
@@ -104,6 +110,10 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 		frequency = 0;
 	} else {
 		frequency = get_frequency(music_note.note, music_note.octave);
+		
+		//check for fundamental frequency overflow
+		if(frequency > MAX_FREQUENCY)
+			status_flags.frequency_overflow = true;
 	}
 	
 	//set the current time to zero at the beginning of the wave
@@ -121,14 +131,13 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 	
 	//loop through the entire array, taking samples of the wave at each time given
 	for(unsigned int index = 0; index < number_of_samples; index++){
-		//waveform of the fundamental harmonic
-		wave_array[index] = sin(2 * pi * frequency * current_time);
 		
-		//add some of the second harmonic
-		wave_array[index] += 0.5 * sin(4 * pi * frequency * current_time);
-		
-		//add some of the third harmonic
-		wave_array[index] += 0.25 * sin(6 * pi * frequency * current_time);
+		//add each wanted harmonic of the note given
+		for(unsigned int harmonic = 1; harmonic <= num_harmonics; harmonic++){
+			//check for frequency overflow
+			if(frequency * harmonic < MAX_FREQUENCY)
+				wave_array[index] += harmonic_intensities[harmonic] * sin(harmonic * 2 * pi * frequency * current_time);
+		}
 		
 		//apply an adsr envelope
 		if(wave_array[index] != 0){

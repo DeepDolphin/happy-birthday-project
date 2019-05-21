@@ -15,6 +15,9 @@ struct StatusFlags{
 	
 	//flag to represent that volume clipping has occured
 	bool volume_clipped;
+	
+	//flag to represent that frequency has overflowed
+	bool frequency_overflow;
 };
 
 void stop_audio_playback(unsigned int * num_samples, volatile int * audio_fifo);

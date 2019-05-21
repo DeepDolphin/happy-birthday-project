@@ -14,7 +14,7 @@
 
 
 extern struct AudioStream audio_stream;
-struct StatusFlags status_flags = {.clear_queue = false, .change_song = false, .is_playing = false, .volume_clipped = false};
+struct StatusFlags status_flags = {.clear_queue = false, .change_song = false, .is_playing = false, .volume_clipped = false, .frequency_overflow = false};
 const unsigned int max_volume = 10, min_volume = 0, default_volume = 5;
 const double volume_sensitivity = 1.5;
 unsigned int volume = 5;
@@ -92,6 +92,11 @@ void display_status(){
 	//display if the audio output overflowed
 	if(status_flags.volume_clipped){
 		to_display_on_ledr = to_display_on_ledr | 0x200;
+	}
+	
+	//display if frequency overflow has occurred
+	if(status_flags.frequency_overflow){
+		to_display_on_ledr = to_display_on_ledr | 0x100;
 	}
 	
 	//store all hex displays
