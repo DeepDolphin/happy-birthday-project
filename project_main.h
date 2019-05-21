@@ -12,6 +12,9 @@ struct StatusFlags{
 	
 	//flag to represent play/stop status
 	bool is_playing;
+	
+	//flag to represent that volume clipping has occured
+	bool volume_clipped;
 };
 
 void stop_audio_playback(unsigned int * num_samples, volatile int * audio_fifo);

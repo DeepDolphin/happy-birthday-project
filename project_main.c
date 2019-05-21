@@ -7,14 +7,17 @@
 #include "songs.h"
 #include "utilities.c"
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
 
+
 extern struct AudioStream audio_stream;
-struct StatusFlags status_flags = {.clear_queue = false, .change_song = false, .is_playing = false};
-const unsigned int max_volume = 10, min_volume = 0, default_volume = 5, volume_step = 2;
-unsigned int volume = default_volume;
+struct StatusFlags status_flags = {.clear_queue = false, .change_song = false, .is_playing = false, .volume_clipped = false};
+const unsigned int max_volume = 10, min_volume = 0, default_volume = 5;
+const double volume_sensitivity = 1.5;
+unsigned int volume = 5;
 
 int main(){
 	volatile int * sw_base = (int*) SW_BASE;
@@ -78,13 +81,18 @@ void display_status(){
 	//store all ledr displays
 	int to_display_on_ledr = 0;
 	
-	//display if the audio_stream has been fully populated
+	//display if the stream has been fully populated
 	if (is_stream_fully_processed()) 
-		to_display_on_ledr = 0b1;
+		to_display_on_ledr = 0x2;
 	
-	//display if the audio_stream is currently valid
+	//display if the stream is currently valid
 	if (is_stream_valid())
-		to_display_on_ledr = to_display_on_ledr | 0b10;
+		to_display_on_ledr = to_display_on_ledr | 0x1;
+	
+	//display if the audio output overflowed
+	if(status_flags.volume_clipped){
+		to_display_on_ledr = to_display_on_ledr | 0x200;
+	}
 	
 	//store all hex displays
 	int to_display_on_hex3_hex0 = 0;
@@ -194,6 +202,9 @@ void audio_ISR(){
 	
 	unsigned int fifo_space = *(audio_base + 1);
 		
+	//check the change in amplitude of the waves
+	double amplitude_modulation = pow(volume_sensitivity, ((double) volume) - ((double) default_volume));
+		
 	//check the right and left write availability
 	unsigned int num_samples_right = (unsigned int) ((fifo_space >> 16) & 0xFF);
 	unsigned int num_samples_left = (unsigned int) ((fifo_space >> 24) & 0xFF);
@@ -201,16 +212,28 @@ void audio_ISR(){
 		double sample_mono = get_sample(PLAYBACK_MONO);
 		
 		if(num_samples_right > 0){
+			//check for overflow
+			double sample_right = get_sample(PLAYBACK_STEREO_R) + sample_mono;
+			if(abs(sample_right) > INT_MAX / amplitude_modulation){
+				status_flags.volume_clipped = true;
+			}
+			
 			//retrieve and write a sample to the right
-			*audio_right = (int) (volume_step * (volume - default_volume) * (get_sample(PLAYBACK_STEREO_R) + sample_mono));
+			*audio_right = (int) (sample_right * amplitude_modulation);
 			
 			//decrement the number of samples required
 			num_samples_right--;
 		}
 		
 		if(num_samples_left > 0){
+			//check for overflow
+			double sample_left = get_sample(PLAYBACK_STEREO_L) + sample_mono;
+			if(abs(sample_left) > INT_MAX / amplitude_modulation){
+				status_flags.volume_clipped = true;
+			}
+			
 			//retrieve and write a sample to the left
-			*audio_left = (int) (volume_step * (volume - default_volume) * (get_sample(PLAYBACK_STEREO_L) + sample_mono));
+			*audio_left = (int) (sample_left * amplitude_modulation);
 			
 			//decrement the number of samples required
 			num_samples_left--;
