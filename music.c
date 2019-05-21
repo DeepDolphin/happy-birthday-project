@@ -131,12 +131,13 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 	
 	//loop through the entire array, taking samples of the wave at each time given
 	for(unsigned int index = 0; index < number_of_samples; index++){
+		wave_array[index] = 0;
 		
 		//add each wanted harmonic of the note given
 		for(unsigned int harmonic = 1; harmonic <= num_harmonics; harmonic++){
 			//check for frequency overflow
 			if(frequency * harmonic < MAX_FREQUENCY)
-				wave_array[index] += harmonic_intensities[harmonic] * sin(harmonic * 2 * pi * frequency * current_time);
+				wave_array[index] += harmonic_intensities[harmonic - 1] * sin(harmonic * 2 * pi * frequency * current_time);
 		}
 		
 		//apply an adsr envelope
