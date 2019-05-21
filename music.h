@@ -4,12 +4,15 @@
 struct MusicNote {
 	char * note;
 	int octave;
+	double duration; //in seconds
+	double peak_intensity; //expected between 0-10
+	double sustain_intensity; //expected between 0-10
+	double * adsr_envelope; //array of attack, delay, sustain, and release proportions (must add up to 1)
 };
 
 struct MusicChord {
 	struct MusicNote * music_notes;
-	double duration; //in seconds
-	double intensity;
+	double duration; //in seconds of longest note in chord
 	unsigned int num_notes;
 };
 
@@ -35,6 +38,6 @@ struct MusicWave {
 double get_frequency(char * note, int octave);
 int get_num(char * note, int octave);
 struct MusicWave get_chord_wave(struct MusicChord music_chord);
-struct MusicWave get_note_wave(struct MusicNote music_note, unsigned int number_of_samples);
+struct MusicWave get_note_wave(struct MusicNote music_note);
 
 #endif
