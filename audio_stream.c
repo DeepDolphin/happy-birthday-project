@@ -102,11 +102,17 @@ void advance_stream(struct MusicWaveNode ** front_node){
 }
 
 bool is_stream_valid(){
+	//stream is invalid if any one of the queues are empty and the track for that queue is not fully processed yet
 	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
 		if(audio_stream.queue_fronts[i] == NULL && !is_track_fully_processed(i)) return false;
 	}
 	
-	return true;
+	//or if all the queues are empty
+	for(unsigned int i = 0; i < audio_stream.current_song->num_tracks; i++){
+		if(audio_stream.queue_fronts[i] != NULL) return true;
+	}
+	
+	return false;
 }
 
 bool is_track_fully_processed(unsigned int track_num){
