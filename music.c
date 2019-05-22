@@ -64,7 +64,7 @@ int get_num(char * note, int octave){
 		while (1);
 	}
 	
-	return number + (octave * 12);
+	return number + ((octave + 1) * 12);
 }
 
 //returns a dynamically allocated array representing the wave intensity of each sample for the chord
