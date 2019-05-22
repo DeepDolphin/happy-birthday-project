@@ -13,7 +13,7 @@ const int sampling_frequency = 8000;
 const double sampling_period = 0.000125;
 const double default_amplitude = INT_MAX / 500;
 
-const double num_harmonics = 3;
+const double num_harmonics = 1;
 const double harmonic_intensities[] = {1, 0.5, 0.25};
 
 extern struct StatusFlags status_flags;
@@ -106,8 +106,13 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 	
 	//find the frequency for the given note and octave
 	double frequency;
-	if(!strcmp(music_note.note, "S")){ //if the note is silent, return no frequency and zero the intensity
-		frequency = 0;
+	if(!strcmp(music_note.note, "S")){ //if the note is silent, return an empty array
+		for(int i = 0; i < number_of_samples; i++){
+			wave_array[i] = 0;
+		}
+		
+		struct MusicWave wave = {.waveform = wave_array, .length = number_of_samples};
+		return wave;
 	} else {
 		frequency = get_frequency(music_note.note, music_note.octave);
 		
