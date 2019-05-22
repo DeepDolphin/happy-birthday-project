@@ -13,8 +13,8 @@ const int sampling_frequency = 8000;
 const double sampling_period = 0.000125;
 const double default_amplitude = INT_MAX / 500;
 
-const double num_harmonics = 1;
-const double harmonic_intensities[] = {1, 0.5, 0.25};
+const double num_harmonics = 4;
+const double harmonic_intensities[] = {1, 0.5, 0.25, 0.1};
 
 extern struct StatusFlags status_flags;
 
