@@ -256,9 +256,7 @@ void audio_ISR(){
 		//check if the audio stream is still valid
 		if(!is_stream_valid()){
 			stop_all_audio_playback();
-			if(is_stream_fully_processed()) {
-				status_flags.clear_queue = true;
-			}
+			if(is_stream_fully_processed()) status_flags.clear_queue = true;
 			break;
 		}
 	}
