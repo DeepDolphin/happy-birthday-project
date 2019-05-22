@@ -15,9 +15,10 @@
             <source_file filepath="true">config_A9_interrupts.c</source_file>
             <source_file filepath="true">exceptions.c</source_file>
             <source_file filepath="true">music.c</source_file>
+            <source_file filepath="true">audio_stream.c</source_file>
         </source_files>
         <options>
-            <compiler_flags>-g -O1 -std=c11</compiler_flags>
+            <compiler_flags>-g -O3 -std=c11</compiler_flags>
         </options>
         <linker_sections type="Exceptions">
             <linker_section name=".vectors">
