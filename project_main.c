@@ -113,8 +113,8 @@ void display_status(){
 	double time_left = get_time_left();
 	//decide to display the deciseconds or not
 	if(time_left > 100){
-		to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_dec(((int) time_left) % 100) << 16);
-		to_display_on_hex5_hex4 = num_to_seg7_dec(((int) time_left) / 100);
+		to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_dec(((int) time_left) % 60) << 16);
+		to_display_on_hex5_hex4 = num_to_seg7_dec(((int) time_left) / 60);
 	} else { //display the deciseconds
 		to_display_on_hex3_hex0 = to_display_on_hex3_hex0 | (num_to_seg7_dec(((int) (time_left * 100)) % 100) << 16);
 		to_display_on_hex5_hex4 = num_to_seg7_dec(((int) time_left) % 100);
