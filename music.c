@@ -96,6 +96,36 @@ struct MusicWave get_chord_wave(struct MusicChord music_chord){
 	return wave;
 }
 
+struct MusicWave example_sine = {.waveform = (double[]) {0, 0.0627905195293134, 0.125333233564304, 0.187381314585725, 0.248689887164855, 0.309016994374947, 0.368124552684678, 0.425779291565073, 0.481753674101715, 0.535826794978997, 0.587785252292473, 0.63742398974869, 0.684547105928689, 0.728968627421412, 0.770513242775789, 0.809016994374948, 0.844327925502015, 0.876306680043864, 0.90482705246602, 0.929776485888252, 0.951056516295154, 0.968583161128631, 0.982287250728689, 0.992114701314478, 0.998026728428272, 1, 0.998026728428272, 0.992114701314478, 0.982287250728689, 0.968583161128631, 0.951056516295154, 0.929776485888251, 0.904827052466019, 0.876306680043864, 0.844327925502015, 0.809016994374948, 0.770513242775789, 0.728968627421412, 0.684547105928689, 0.637423989748691, 0.587785252292474, 0.535826794978998, 0.481753674101716, 0.425779291565074, 0.368124552684679, 0.309016994374949, 0.248689887164857, 0.187381314585727, 0.125333233564306, 0.0627905195293158, 2.34290668463255E-15, -0.0627905195293107, -0.125333233564302, -0.187381314585722, -0.248689887164852, -0.309016994374946, -0.368124552684676, -0.425779291565071, -0.481753674101714, -0.535826794978996, -0.587785252292472, -0.637423989748689, -0.684547105928688, -0.728968627421411, -0.770513242775789, -0.809016994374947, -0.844327925502015, -0.876306680043864, -0.90482705246602, -0.929776485888252, -0.951056516295154, -0.968583161128631, -0.982287250728689, -0.992114701314478, -0.998026728428272, -1, -0.998026728428271, -0.992114701314478, -0.982287250728688, -0.96858316112863, -0.951056516295153, -0.92977648588825, -0.904827052466018, -0.876306680043862, -0.844327925502013, -0.809016994374945, -0.770513242775786, -0.728968627421408, -0.684547105928685, -0.637423989748686, -0.587785252292468, -0.535826794978992, -0.48175367410171, -0.425779291565067, -0.368124552684672, -0.309016994374941, -0.248689887164848, -0.187381314585718, -0.125333233564297, -0.0627905195293053}, .length = 100};
+	
+//returns the value for a sine wave at the asked time and frequency
+double calc_sine(double time, double frequency){
+	if(*((int *) SW_BASE) == 0x200){
+		double sampling_rate = example_sine.length * frequency;
+		double period = 1 / frequency;
+		
+		//ensure index is within the waveform
+		unsigned int index_left = ((unsigned int) floor(time * sampling_rate)) % example_sine.length;
+		unsigned int index_right = ((unsigned int) ceil(time * sampling_rate)) % example_sine.length;
+		
+		if(index_left != index_right){
+			//interpolate between the two points of the example sinewave
+			double delta_value = example_sine.waveform[index_right] - example_sine.waveform[index_left];
+			double delta_time = 1 / sampling_rate;
+			double initial_time = index_left * sampling_rate;
+			double initial_value = example_sine.waveform[index_left];
+			
+			double value = delta_value / delta_time * (time - initial_time) + initial_value;
+			
+			return value;
+		} else {
+			return example_sine.waveform[index_left];
+		}
+	} else {
+		return sin(2 * pi * frequency * time);
+	}
+}
+
 //returns a dynamically allocated array representing the wave intensity of each sample for the note
 struct MusicWave get_note_wave(struct MusicNote music_note){
 	//find the number of samples for the duration given
@@ -142,7 +172,7 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 		for(unsigned int harmonic = 1; harmonic <= num_harmonics; harmonic++){
 			//check for frequency overflow
 			if(frequency * harmonic < MAX_FREQUENCY)
-				wave_array[index] += harmonic_intensities[harmonic - 1] * sin(harmonic * 2 * pi * frequency * current_time);
+				wave_array[index] += harmonic_intensities[harmonic - 1] * calc_sine(current_time, harmonic * frequency);
 		}
 		
 		//apply an adsr envelope
