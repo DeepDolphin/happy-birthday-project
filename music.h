@@ -40,13 +40,13 @@ struct MusicWave {
 //holds all possible music waves for note numbers 0-107
 struct MusicInstrument {
 	struct InstrumentWave * instrument_waves;
-};
+}
 
 struct InstrumentWave {
 	double * waveform;
 	double sampling_rate;
 	double original_freq;
-};
+}
 
 double get_frequency(char * note, int octave);
 int get_num(char * note, int octave);
