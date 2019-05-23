@@ -1,5 +1,5 @@
 # Project Description:
-An application for playing music (specifically happy birthday) to be ran on an ARM processor on a DE1-SoC FPGA board.
+An application for synthesizing and playing music (specifically happy birthday) to be ran on an ARM processor on a DE1-SoC FPGA board.
 
 # Status Reports:
 
