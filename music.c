@@ -13,15 +13,15 @@ const int sampling_frequency = 8000;
 const double sampling_period = 0.000125;
 const double default_amplitude = INT_MAX / 500;
 
-const double num_harmonics = 4;
-const double harmonic_intensities[] = {1, 0.5, 0.25, 0.1};
+const double harmonic_sensitivity = 0.7;
+const unsigned int max_harmonics = 7;
+
+struct MusicCache music_cache;
 
 extern struct StatusFlags status_flags;
 
 //returns the frequency requested of the key number given
-double get_frequency(char * note, int octave){
-	int key_number = get_num(note, octave);
-	
+double get_frequency(int key_number){
 	const double middle_A_freq = 440; //Hz
 	const int middle_A_num = get_num("A", 4); //number pertaining to the middle A
 	
@@ -96,6 +96,40 @@ struct MusicWave get_chord_wave(struct MusicChord music_chord){
 	return wave;
 }
 
+//initializes the music cache
+void initialize_cache(){
+	//allocate space for all lines 0-127
+	music_cache.cache_lines = malloc(sizeof(struct CacheWave) * 128);
+	
+	for(unsigned int i = 0; i < 128; i++){
+		//initialize all variables in the line
+		music_cache.cache_lines[i].waveform = NULL;
+		music_cache.cache_lines[i].allocated_length = 0;
+		music_cache.cache_lines[i].used_length = 0;
+	}
+}
+
+//expands the given line
+void expand_cache_line(struct CacheWave * cache_line){
+	//allocate space for the new array
+	unsigned int new_length	= (cache_line->allocated_length << 1) | 0b1;
+	double * new_array = malloc(sizeof(double) * new_length);
+	
+	//copy over all used samples in the array
+	for(unsigned int i = 0; i < cache_line->used_length; i++){
+		new_array[i] = cache_line->waveform[i];
+	}
+	
+	//free the old array
+	free(cache_line->waveform);
+	
+	//store the new array where the old array was
+	cache_line->waveform = new_array;
+	
+	//update the allocated space
+	cache_line->allocated_length = new_length;
+}
+
 //returns a dynamically allocated array representing the wave intensity of each sample for the note
 struct MusicWave get_note_wave(struct MusicNote music_note){
 	//find the number of samples for the duration given
@@ -104,22 +138,23 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 	//preallocate enough space for all samples
 	double * wave_array = malloc(number_of_samples * sizeof(double));
 	
-	//find the frequency for the given note and octave
-	double frequency;
-	if(!strcmp(music_note.note, "S")){ //if the note is silent, return an empty array
+	//if the note is silent, return an empty array
+	if(!strcmp(music_note.note, "S")){ 
 		for(int i = 0; i < number_of_samples; i++){
 			wave_array[i] = 0;
 		}
 		
 		struct MusicWave wave = {.waveform = wave_array, .length = number_of_samples};
 		return wave;
-	} else {
-		frequency = get_frequency(music_note.note, music_note.octave);
-		
-		//check for fundamental frequency overflow
-		if(frequency > MAX_FREQUENCY)
-			status_flags.frequency_overflow = true;
 	}
+	
+	//find the frequency for the given note and octave
+	int note_number = get_num(music_note.note, music_note.octave);
+	double frequency = get_frequency(note_number);
+		
+	//check for fundamental frequency overflow or the note number is out of bounds
+	if(frequency > MAX_FREQUENCY || (note_number < 0 || note_number > 127))
+		status_flags.frequency_overflow = true;
 	
 	//set the current time to zero at the beginning of the wave
 	double current_time = 0;
@@ -136,13 +171,32 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 	
 	//loop through the entire array, taking samples of the wave at each time given
 	for(unsigned int index = 0; index < number_of_samples; index++){
-		wave_array[index] = 0;
+		struct CacheWave * cache_line = &music_cache.cache_lines[note_number];
 		
-		//add each wanted harmonic of the note given
-		for(unsigned int harmonic = 1; harmonic <= num_harmonics; harmonic++){
-			//check for frequency overflow
-			if(frequency * harmonic < MAX_FREQUENCY)
-				wave_array[index] += harmonic_intensities[harmonic - 1] * sin(harmonic * 2 * pi * frequency * current_time);
+		//check the cache if there exists a sample already calculated
+		if(index < cache_line->used_length){
+			//copy cache sample to current wave
+			wave_array[index] = cache_line->waveform[index];
+			
+		} else {
+			//expand the cache if needed prior to creating a new sample
+			if(cache_line->used_length >= cache_line->allocated_length){
+				expand_cache_line(cache_line);
+			}
+			
+			//create the sample since it doesn't exist in cache
+			wave_array[index] = 0;
+		
+			//add each wanted harmonic of the note given as long as it doesn't overflow
+			for(unsigned int harmonic = 1; frequency * harmonic < MAX_FREQUENCY && harmonic < max_harmonics; harmonic++){
+				wave_array[index] += pow(harmonic_sensitivity, harmonic - 1) * sin(harmonic * 2 * pi * frequency * current_time);
+			}
+			
+			//copy sample to cache
+			cache_line->waveform[index] = wave_array[index];
+			
+			//increment length to match
+			cache_line->used_length++;
 		}
 		
 		//apply an adsr envelope

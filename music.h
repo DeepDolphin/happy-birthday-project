@@ -37,9 +37,21 @@ struct MusicWave {
 	unsigned int length;
 };
 
-double get_frequency(char * note, int octave);
+struct MusicCache {
+	struct CacheWave * cache_lines;
+};
+
+struct CacheWave {
+	double * waveform;
+	unsigned int allocated_length;
+	unsigned int used_length;
+};
+
+double get_frequency(int key_number);
 int get_num(char * note, int octave);
 struct MusicWave get_chord_wave(struct MusicChord music_chord);
 struct MusicWave get_note_wave(struct MusicNote music_note);
+void initialize_cache();
+void expand_cache_line(struct CacheWave * cache_line);
 
 #endif

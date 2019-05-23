@@ -27,7 +27,10 @@ int main(){
 	config_GIC();
 	config_audio();
 	config_keys();
-					
+	
+	//initialize the music cache
+	initialize_cache();
+	
 	//initialize the audio stream
 	audio_stream.current_song = song_list;
 	initialize_stream();
