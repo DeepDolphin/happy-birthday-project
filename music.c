@@ -7,17 +7,19 @@
 #include "music.h"
 #include "address_map_arm.h"
 #include "project_main.h"
+#include "audio_stream.h"
 
 const double pi = 3.14159265358979323846;
 const int sampling_frequency = 8000;
 const double sampling_period = 0.000125;
 const double default_amplitude = INT_MAX / 500;
 
-const double harmonic_sensitivity = 0.7;
-const unsigned int max_harmonics = 7;
+#define MAX_HARMONICS 7
+#define INCR_RES_CUTOFF 20
+
+const double harmonic_sensitivity = 0.55;
 
 struct MusicCache music_cache;
-
 extern struct StatusFlags status_flags;
 
 //returns the frequency requested of the key number given
@@ -103,31 +105,65 @@ void initialize_cache(){
 	
 	for(unsigned int i = 0; i < 128; i++){
 		//initialize all variables in the line
-		music_cache.cache_lines[i].waveform = NULL;
-		music_cache.cache_lines[i].allocated_length = 0;
-		music_cache.cache_lines[i].used_length = 0;
+		music_cache.cache_lines[i].waveforms = malloc(sizeof(double *) * MAX_HARMONICS);
+		music_cache.cache_lines[i].allocated_lengths = malloc(sizeof(unsigned int *) * MAX_HARMONICS);
+		music_cache.cache_lines[i].used_lengths = malloc(sizeof(unsigned int *) * MAX_HARMONICS);
+		music_cache.cache_lines[i].quality = 0;
+		
+		//initialize all variables for each harmonic quality
+		for(unsigned int j = 0; j < MAX_HARMONICS; j++){
+			music_cache.cache_lines[i].waveforms[j] = NULL;
+			music_cache.cache_lines[i].allocated_lengths[j] = 0;
+			music_cache.cache_lines[i].used_lengths[j] = 0;
+		}
 	}
 }
 
 //expands the given line
-void expand_cache_line(struct CacheWave * cache_line){
+void expand_cache_line(struct CacheWave * cache_line, unsigned int overtone){
 	//allocate space for the new array
-	unsigned int new_length	= (cache_line->allocated_length << 1) | 0b1;
+	unsigned int new_length	= (cache_line->allocated_lengths[overtone] << 1) | 0b1;
 	double * new_array = malloc(sizeof(double) * new_length);
 	
 	//copy over all used samples in the array
-	for(unsigned int i = 0; i < cache_line->used_length; i++){
-		new_array[i] = cache_line->waveform[i];
+	for(unsigned int i = 0; i < cache_line->used_lengths[overtone]; i++){
+		new_array[i] = cache_line->waveforms[overtone][i];
 	}
 	
 	//free the old array
-	free(cache_line->waveform);
+	free(cache_line->waveforms[overtone]);
 	
 	//store the new array where the old array was
-	cache_line->waveform = new_array;
+	cache_line->waveforms[overtone] = new_array;
 	
 	//update the allocated space
-	cache_line->allocated_length = new_length;
+	cache_line->allocated_lengths[overtone] = new_length;
+}
+
+//returns the value for the sine and upgrades quality in cache if necessary
+double calc_sine(struct CacheWave * cache_line, unsigned int index, double frequency, double current_time, unsigned int target_quality){
+	double sample = 0;
+	
+	//for each overtone check and retrieve the sample in the cache up to the target quality
+	for(unsigned int overtone = 0; frequency * (overtone + 1) < MAX_FREQUENCY && overtone < target_quality; overtone++){
+		//generate the sample if needed first
+		if(index >= cache_line->used_lengths[overtone]){
+			//expand the cache if needed prior to creating a new sample
+			if(cache_line->used_lengths[overtone] >= cache_line->allocated_lengths[overtone]){
+				expand_cache_line(cache_line, overtone);
+			}
+			
+			//generate the sample and store
+			cache_line->waveforms[overtone][index] = pow(harmonic_sensitivity, overtone) * sin((overtone + 1) * 2 * pi * frequency * current_time);
+			
+			//increment length to match
+			cache_line->used_lengths[overtone]++;
+		}
+		
+		sample += cache_line->waveforms[overtone][index];
+	}
+	
+	return sample;
 }
 
 //returns a dynamically allocated array representing the wave intensity of each sample for the note
@@ -169,35 +205,26 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 	double sustain_volume = music_note.sustain_intensity * default_amplitude;
 	double sample_volume;
 	
+	//determine a target quality to compute for
+	struct CacheWave * cache_line = &music_cache.cache_lines[note_number];
+	double time_ratio = (get_time_left() / music_note.duration);
+	unsigned int target_quality;
+	
+	//only upgrade the quality by one (only need to generate the highest overtone)
+	if(time_ratio < INCR_RES_CUTOFF){
+		target_quality = 1;
+	} else {
+		for(target_quality = 1; target_quality < MAX_HARMONICS; target_quality++){
+			if(cache_line->used_lengths[target_quality - 1] < number_of_samples){
+				break;
+			}
+		}
+	}
+	
 	//loop through the entire array, taking samples of the wave at each time given
 	for(unsigned int index = 0; index < number_of_samples; index++){
-		struct CacheWave * cache_line = &music_cache.cache_lines[note_number];
-		
-		//check the cache if there exists a sample already calculated
-		if(index < cache_line->used_length){
-			//copy cache sample to current wave
-			wave_array[index] = cache_line->waveform[index];
-			
-		} else {
-			//expand the cache if needed prior to creating a new sample
-			if(cache_line->used_length >= cache_line->allocated_length){
-				expand_cache_line(cache_line);
-			}
-			
-			//create the sample since it doesn't exist in cache
-			wave_array[index] = 0;
-		
-			//add each wanted harmonic of the note given as long as it doesn't overflow
-			for(unsigned int harmonic = 1; frequency * harmonic < MAX_FREQUENCY && harmonic < max_harmonics; harmonic++){
-				wave_array[index] += pow(harmonic_sensitivity, harmonic - 1) * sin(harmonic * 2 * pi * frequency * current_time);
-			}
-			
-			//copy sample to cache
-			cache_line->waveform[index] = wave_array[index];
-			
-			//increment length to match
-			cache_line->used_length++;
-		}
+		//retrieve the sample of the target quality
+		wave_array[index] = calc_sine(cache_line, index, frequency, current_time, target_quality);
 		
 		//apply an adsr envelope
 		if(wave_array[index] != 0){
@@ -218,6 +245,10 @@ struct MusicWave get_note_wave(struct MusicNote music_note){
 		//increment the current time
 		current_time += sampling_period;
 	}
+	
+	//update the quality of the cache line edited if it was increased
+	if(cache_line->quality < target_quality)
+		cache_line->quality = target_quality;
 	
 	//return the sampled wave
 	struct MusicWave wave = {.waveform = wave_array, .length = number_of_samples};

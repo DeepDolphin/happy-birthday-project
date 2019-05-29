@@ -42,16 +42,18 @@ struct MusicCache {
 };
 
 struct CacheWave {
-	double * waveform;
-	unsigned int allocated_length;
-	unsigned int used_length;
+	double ** waveforms;
+	unsigned int * allocated_lengths;
+	unsigned int * used_lengths;
+	unsigned int quality; //a quality level representing the highest harmonic stored in the cache
 };
 
 double get_frequency(int key_number);
 int get_num(char * note, int octave);
+double calc_sine(struct CacheWave * cache_line, unsigned int index, double frequency, double current_time, unsigned int target_quality);
 struct MusicWave get_chord_wave(struct MusicChord music_chord);
 struct MusicWave get_note_wave(struct MusicNote music_note);
 void initialize_cache();
-void expand_cache_line(struct CacheWave * cache_line);
+void expand_cache_line(struct CacheWave * cache_line, unsigned int overtone);
 
 #endif
